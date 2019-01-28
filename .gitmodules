@@ -1,0 +1,12 @@
+[submodule "mujoco-py"]
+	path = mujoco-py
+	url = https://github.com/openai/mujoco-py.git
+[submodule "gym"]
+	path = gym
+	url = https://github.com/openai/gym.git
+[submodule "ELF"]
+	path = ELF
+	url = https://github.com/facebookresearch/ELF.git
+[submodule "SerpentAI"]
+	path = SerpentAI
+	url = https://github.com/SerpentAI/SerpentAI.git
