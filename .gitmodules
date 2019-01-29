@@ -19,3 +19,6 @@
 [submodule "spaun2.0"]
 	path = spaun2.0
 	url = https://github.com/xchoo/spaun2.0.git
+[submodule "JLOAF"]
+	path = JLOAF
+	url = https://github.com/NMAI-lab/JLOAF.git
