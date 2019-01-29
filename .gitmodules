@@ -16,6 +16,3 @@
 [submodule "Soar"]
 	path = Soar
 	url = https://github.com/SoarGroup/Soar.git
-[submodule "spaun2.0"]
-	path = spaun2.0
-	url = https://github.com/xchoo/spaun2.0.git
