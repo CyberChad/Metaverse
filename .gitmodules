@@ -10,3 +10,12 @@
 [submodule "SerpentAI"]
 	path = SerpentAI
 	url = https://github.com/SerpentAI/SerpentAI.git
+[submodule "ccmsuite"]
+	path = ccmsuite
+	url = https://github.com/tcstewar/ccmsuite.git
+[submodule "Soar"]
+	path = Soar
+	url = https://github.com/SoarGroup/Soar.git
+[submodule "spaun2.0"]
+	path = spaun2.0
+	url = https://github.com/xchoo/spaun2.0.git
