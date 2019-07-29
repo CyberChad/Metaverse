@@ -1,24 +1,6 @@
-[submodule "mujoco-py"]
-	path = mujoco-py
-	url = https://github.com/openai/mujoco-py.git
-[submodule "gym"]
-	path = gym
-	url = https://github.com/openai/gym.git
-[submodule "ELF"]
-	path = ELF
-	url = https://github.com/facebookresearch/ELF.git
-[submodule "SerpentAI"]
-	path = SerpentAI
-	url = https://github.com/SerpentAI/SerpentAI.git
 [submodule "ccmsuite"]
 	path = ccmsuite
 	url = https://github.com/tcstewar/ccmsuite.git
 [submodule "Soar"]
 	path = Soar
 	url = https://github.com/SoarGroup/Soar.git
-[submodule "spaun2.0"]
-	path = spaun2.0
-	url = https://github.com/xchoo/spaun2.0.git
-[submodule "JLOAF"]
-	path = JLOAF
-	url = https://github.com/NMAI-lab/JLOAF.git
