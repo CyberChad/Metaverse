@@ -2,6 +2,52 @@ from __future__ import print_function
 import math
 import logging
 
+from pysc2.agents import base_agent
+from pysc2.lib import actions
+
+import ccmsuite
+from ccmsuite import ccm
+from ccm.lib.actr import *
+
+class Addition(ACTR):
+    goal = Buffer()
+    retrieve = Buffer()
+    memory = Memory(retrieve)
+
+    def init():
+        memory.add('count 0 1')
+        memory.add('count 1 2')
+        memory.add('count 2 3')
+        memory.add('count 3 4')
+        memory.add('count 4 5')
+        memory.add('count 5 6')
+        memory.add('count 6 7')
+        memory.add('count 7 8')
+
+    def initializeAddition(goal='add ?num1 ?num2 count:None?count sum:None?sum'):
+        goal.modify(count=0, sum=num1)
+        memory.request('count ?num1 ?next')
+
+    def terminateAddition(goal='add ?num1 ?num2 count:?num2 sum:?sum'):
+        goal.set('result ?sum')
+        print
+        sum
+
+    def incrementSum(goal='add ?num1 ?num2 count:?count!?num2 sum:?sum',
+                     retrieve='count ?sum ?next'):
+        goal.modify(sum=next)
+        memory.request('count ?count ?n2')
+
+    def incrementCount(goal='add ?num1 ?num2 count:?count sum:?sum',
+                       retrieve='count ?count ?next'):
+        goal.modify(count=next)
+        memory.request('count ?sum ?n2')
+
+
+#model = Addition()
+#model.goal.set('add 5 2 count:None sum:None')
+#model.run()
+
 
 def sum_two_numbers(a, b):
     return a + b            # return result to the function caller
@@ -21,6 +67,13 @@ def fib(n):
         b = a + b
         a = tmp_var
     return result
+
+
+class SimpleAgent(base_agent.BaseAgent):
+    def step(self, obs):
+        super(SimpleAgent, self).step(obs)
+
+        return actions.FunctionCall(actions.FUNCTIONS.no_op.id, [])
 
 # holds the different cognitive architectures that we have available
 class Architectures:
