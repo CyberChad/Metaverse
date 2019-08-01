@@ -1,6 +1,0 @@
-[submodule "ccmsuite"]
-	path = ccmsuite
-	url = https://github.com/tcstewar/ccmsuite.git
-[submodule "Soar"]
-	path = Soar
-	url = https://github.com/SoarGroup/Soar.git
