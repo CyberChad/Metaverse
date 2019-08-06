@@ -1,0 +1,3 @@
+[submodule "ccmsuite"]
+	path = ccmsuite
+	url = https://github.com/tcstewar/ccmsuite.git

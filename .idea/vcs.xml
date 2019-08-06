@@ -2,13 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ELF" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/JLOAF" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/SerpentAI" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Soar" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ccmsuite" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/gym" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/mujoco-py" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/spaun2.0" vcs="Git" />
   </component>
 </project>

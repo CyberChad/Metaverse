@@ -1,13 +1,17 @@
 from __future__ import print_function
-import math
+
 import logging
+import sys
 
 from pysc2.agents import base_agent
 from pysc2.lib import actions
 
-import ccmsuite
-from ccmsuite import ccm
+#sys.path.append('../../')
+
+from ccm import model
 from ccm.lib.actr import *
+
+from ccm import *
 
 class Addition(ACTR):
     goal = Buffer()
