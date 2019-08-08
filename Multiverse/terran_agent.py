@@ -50,12 +50,27 @@ class Addition(ACTR):
 
 
 
-class ZergAgent(base_agent.BaseAgent):
+class TerranAgent(base_agent.BaseAgent):
     def __init__(self):
-        super(ZergAgent, self).__init__()
+        super(TerranAgent, self).__init__()
 
         self.attack_coordinates = None
 
+        self.unit_task = 0
+
+        self.building_supply = False
+
+        self.xmean = 0
+        self.ymean = 0
+
+        self.cx = 0
+        self.cy = 0
+
+        self.radius = 10
+        # 1 = build supply depot
+        # 2 = build barracks
+        # 3 = build marine
+        # 4 = attack enemy
 
     def unit_type_is_selected(self, obs, unit_type):
         if (len(obs.observation.single_select) > 0 and
@@ -75,23 +90,79 @@ class ZergAgent(base_agent.BaseAgent):
     def can_do(self, obs, action):
         return action in obs.observation.available_actions
 
+
+
     def step(self, obs):
-        super(ZergAgent, self).step(obs)
+        super(TerranAgent, self).step(obs)
+
+        #if this is the first look at the screen, remember where we are relative to the enemy
 
         if obs.first():
             player_y, player_x = (obs.observation.feature_minimap.player_relative ==
                                   features.PlayerRelative.SELF).nonzero()
-            xmean = player_x.mean()
-            ymean = player_y.mean()
+            self.xmean = player_x.mean()
+            self.ymean = player_y.mean()
 
-            if xmean <= 31 and ymean <= 31:
+            if self.xmean <= 31 and self.ymean <= 31:
                 self.attack_coordinates = (49, 49)
             else:
                 self.attack_coordinates = (12, 16)
 
-        zerglings = self.get_units_by_type(obs, units.Zerg.Zergling)
-        if len(zerglings) >= 10:
-            if self.unit_type_is_selected(obs, units.Zerg.Zergling):
+            centers = self.get_units_by_type(obs, units.Terran.CommandCenter)
+            center = random.choice(centers)
+            self.cx = center.x
+            self.cy = center.y
+
+
+        depots = self.get_units_by_type(obs, units.Terran.SupplyDepot)
+        free_supply = (obs.observation.player.food_cap -
+                       obs.observation.player.food_used)
+        if (free_supply == 0 or len(depots) == 0):
+            if self.unit_type_is_selected(obs, units.Terran.SCV):
+                if self.can_do(obs, actions.FUNCTIONS.Build_SupplyDepot_screen.id):
+
+                    x = random.randint(self.cx - self.radius, self.cx + self.radius)
+                    y = random.randint(self.cy - self.radius, self.cy + self.radius)
+                    print "trying to build a supply depot at " + str(x) + " " + str(y)
+                    #plan_unit = 0
+                    #self.building_supply = True
+                    return actions.FUNCTIONS.Build_SupplyDepot_screen("now", (x,y))
+
+            scvs = self.get_units_by_type(obs, units.Terran.SCV)
+            if len(scvs) > 0:
+                scv = random.choice(scvs)
+                self.unit_task = 1
+                print "selecting SCV to build supply depot"
+                return actions.FUNCTIONS.select_point("select_all_type", (scv.x, scv.y))
+
+
+
+        #********** Building Logic **************
+        barracks = self.get_units_by_type(obs, units.Terran.Barracks)
+        if len(barracks) == 0:
+            if self.unit_type_is_selected(obs, units.Terran.SCV):
+                if self.can_do(obs, actions.FUNCTIONS.Build_Barracks_screen.id):
+                    x = random.randint(self.cx - self.radius, self.cx + self.radius)
+                    y = random.randint(self.cy - self.radius, self.cy + self.radius)
+
+                    print "building barracks at "+ str(x) + " " + str(y)
+
+                    # plan_unit = 0
+                    return actions.FUNCTIONS.Build_Barracks_screen("now", (x, y))
+
+            scvs = self.get_units_by_type(obs, units.Terran.SCV)
+            if len(scvs) > 0:
+                scv = random.choice(scvs)
+                self.unit_task = 2
+                print"selecting SCV to build barracks"
+                return actions.FUNCTIONS.select_point("select_all_type", (scv.x, scv.y))
+
+        #********** ATTACK LOGIC *************
+
+        marines = self.get_units_by_type(obs, units.Terran.Marine)
+        if len(marines) >= 10:
+            self.unit_task = 4
+            if self.unit_type_is_selected(obs, units.Terran.Marine):
                 if self.can_do(obs, actions.FUNCTIONS.Attack_minimap.id):
                     return actions.FUNCTIONS.Attack_minimap("now",
                                                             self.attack_coordinates)
@@ -99,49 +170,31 @@ class ZergAgent(base_agent.BaseAgent):
             if self.can_do(obs, actions.FUNCTIONS.select_army.id):
                 return actions.FUNCTIONS.select_army("select")
 
-        spawning_pools = self.get_units_by_type(obs, units.Zerg.SpawningPool)
-        if len(spawning_pools) == 0:
-            if self.unit_type_is_selected(obs, units.Zerg.Drone):
-                if self.can_do(obs, actions.FUNCTIONS.Build_SpawningPool_screen.id):
-                    x = random.randint(0, 83)
-                    y = random.randint(0, 83)
-
-                    return actions.FUNCTIONS.Build_SpawningPool_screen("now", (x, y))
-
-            drones = self.get_units_by_type(obs, units.Zerg.Drone)
-            if len(drones) > 0:
-                drone = random.choice(drones)
-
-                return actions.FUNCTIONS.select_point("select_all_type", (drone.x,
-                                                                          drone.y))
-
-        if self.unit_type_is_selected(obs, units.Zerg.Larva):
+        # else, build an attack unit (here larva = barracks)
+        if self.unit_type_is_selected(obs, units.Terran.Barracks):
             free_supply = (obs.observation.player.food_cap -
                            obs.observation.player.food_used)
-            if free_supply == 0:
-                if self.can_do(obs, actions.FUNCTIONS.Train_Overlord_quick.id):
-                    return actions.FUNCTIONS.Train_Overlord_quick("now")
+            if free_supply > 0:
+                if self.can_do(obs, actions.FUNCTIONS.Train_Marine_quick.id):
+                    return actions.FUNCTIONS.Train_Marine_quick("now")
 
-            if self.can_do(obs, actions.FUNCTIONS.Train_Zergling_quick.id):
-                return actions.FUNCTIONS.Train_Zergling_quick("now")
-
-        larvae = self.get_units_by_type(obs, units.Zerg.Larva)
-        if len(larvae) > 0:
-            larva = random.choice(larvae)
-
-            return actions.FUNCTIONS.select_point("select_all_type", (larva.x,
-                                                                      larva.y))
+        barracks = self.get_units_by_type(obs, units.Terran.Barracks)
+        if len(barracks) > 0:
+            barrack = random.choice(barracks)
+            self.unit_task= 3 #train marines
+            return actions.FUNCTIONS.select_point("select_all_type", (barrack.x,
+                                                                      barrack.y))
 
         return actions.FUNCTIONS.no_op()
 
 
 def main(unused_argv):
-    agent = ZergAgent()
+    agent = TerranAgent()
     try:
         while True:
             with sc2_env.SC2Env(
                     map_name="Simple64",
-                    players=[sc2_env.Agent(sc2_env.Race.zerg),
+                    players=[sc2_env.Agent(sc2_env.Race.terran),
                              sc2_env.Bot(sc2_env.Race.random,
                                          sc2_env.Difficulty.very_easy)],
                     agent_interface_format=features.AgentInterfaceFormat(

@@ -1,4 +1,4 @@
-from __future__ import print_function
+#from __future__ import print_function
 
 import logging
 import sys
@@ -34,8 +34,7 @@ class Addition(ACTR):
 
     def terminateAddition(goal='add ?num1 ?num2 count:?num2 sum:?sum'):
         goal.set('result ?sum')
-        print
-        sum
+        print sum
 
     def incrementSum(goal='add ?num1 ?num2 count:?count!?num2 sum:?sum',
                      retrieve='count ?sum ?next'):
@@ -125,6 +124,9 @@ class Utilities:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     print(fib(10))
+    model = Addition()
+    model.goal.set('add 5 2 count:None sum:None')
+    model.run()
 
 
 

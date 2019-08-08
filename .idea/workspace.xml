@@ -2,14 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d4b6ada5-eb6e-48b0-aef8-622ca937f31b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/webResources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Multiverse/zerg_agent.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Multiverse/actr-test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Multiverse/protoss_agent_raw.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Multiverse/sparse_agent.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Multiverse/terran_agent.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Multiverse/zerg_agent_actr.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/PhD-Project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/PhD-Project.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Multiverse/Matrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/Multiverse/Metamind.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Multiverse/Metamind.py" beforeDir="false" afterPath="$PROJECT_DIR$/Multiverse/Metamind.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Multiverse/zerg_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/Multiverse/zerg_agent.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,19 +30,13 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
-  </component>
   <component name="ProjectId" id="1P1DdIODGGlYnCFeLbnAaf8r9I9" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Multiverse" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -53,7 +50,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.zerg_agent">
+  <component name="RunManager" selected="Python.terran_agent">
     <configuration name="Metamind" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="PhD-Project" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -76,7 +73,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="u1_addition" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="PhD-Project" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -84,21 +81,21 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ccmsuite/tutorials/ACT-R Unit Tutorials" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ccmsuite/tutorials/ACT-R Unit Tutorials/u1_addition.py" />
+      <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="zerg_agent" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="protoss_agent_raw" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="PhD-Project" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -111,7 +108,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Multiverse/zerg_agent.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Multiverse/protoss_agent_raw.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -120,11 +117,73 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="sparse_agent" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="PhD-Project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Multiverse" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Multiverse/sparse_agent.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="terran_agent" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="PhD-Project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Multiverse" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Multiverse/terran_agent.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="zerg_agent" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="PhD-Project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Multiverse" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Multiverse/zerg_agent.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.terran_agent" />
         <item itemvalue="Python.zerg_agent" />
+        <item itemvalue="Python.sparse_agent" />
+        <item itemvalue="Python.protoss_agent_raw" />
         <item itemvalue="Python.Metamind" />
-        <item itemvalue="Python.u1_addition" />
       </list>
     </recent_temporary>
   </component>
@@ -150,6 +209,7 @@
       <updated>1565032376181</updated>
       <workItem from="1565032819208" duration="7208000" />
       <workItem from="1565053939249" duration="603000" />
+      <workItem from="1565057241202" duration="22753000" />
     </task>
     <servers />
   </component>
@@ -183,8 +243,16 @@
     </ignored-roots>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/PhD_Project$Metamind.coverage" NAME="Metamind Coverage Results" MODIFIED="1565038786447" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multiverse" />
+    <SUITE FILE_PATH="coverage/PhD_Project$actr_test.coverage" NAME="actr-test Coverage Results" MODIFIED="1565059860697" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multiverse" />
+    <SUITE FILE_PATH="coverage/PhD_Project$protoss_agent_raw.coverage" NAME="protoss_agent_raw Coverage Results" MODIFIED="1565276653102" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multiverse" />
+    <SUITE FILE_PATH="coverage/PhD_Project$Metamind.coverage" NAME="Metamind Coverage Results" MODIFIED="1565271591312" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multiverse" />
     <SUITE FILE_PATH="coverage/PhD_Project$u1_addition.coverage" NAME="u1_addition Coverage Results" MODIFIED="1565038781136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ccmsuite/tutorials/ACT-R Unit Tutorials" />
-    <SUITE FILE_PATH="coverage/PhD_Project$zerg_agent.coverage" NAME="zerg_agent Coverage Results" MODIFIED="1565039570124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multiverse" />
+    <SUITE FILE_PATH="coverage/PhD_Project$u1_addition2.coverage" NAME="u1_addition2 Coverage Results" MODIFIED="1565058808154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ccmsuite/tutorials/ACT-R Unit Tutorials" />
+    <SUITE FILE_PATH="coverage/PhD_Project$terran_agent.coverage" NAME="terran_agent Coverage Results" MODIFIED="1565283832458" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multiverse" />
+    <SUITE FILE_PATH="coverage/PhD_Project$sparse_agent.coverage" NAME="sparse_agent Coverage Results" MODIFIED="1565277931457" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multiverse" />
+    <SUITE FILE_PATH="coverage/PhD_Project$u1_count.coverage" NAME="u1_count Coverage Results" MODIFIED="1565058911307" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ccmsuite/tutorials/ACT-R Unit Tutorials" />
+    <SUITE FILE_PATH="coverage/PhD_Project$u1_semantic.coverage" NAME="u1_semantic Coverage Results" MODIFIED="1565058947389" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ccmsuite/tutorials/ACT-R Unit Tutorials" />
+    <SUITE FILE_PATH="coverage/PhD_Project$zerg_agent.coverage" NAME="zerg_agent Coverage Results" MODIFIED="1565280039040" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Multiverse" />
+    <SUITE FILE_PATH="coverage/PhD_Project$u2_match.coverage" NAME="u2_match Coverage Results" MODIFIED="1565061168371" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ccmsuite/tutorials/ACT-R Unit Tutorials" />
   </component>
 </project>
