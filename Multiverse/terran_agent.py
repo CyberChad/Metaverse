@@ -15,12 +15,13 @@ from pysc2.lib import actions
 from ccm import model
 from ccm.lib.actr import *
 
-class Addition(ACTR):
+class ActrAgent(ACTR):
     goal = Buffer()
     retrieve = Buffer()
     memory = Memory(retrieve)
 
     def init():
+        print 'actr init'
         memory.add('count 0 1')
         memory.add('count 1 2')
         memory.add('count 2 3')
@@ -29,25 +30,17 @@ class Addition(ACTR):
         memory.add('count 5 6')
         memory.add('count 6 7')
         memory.add('count 7 8')
+        memory.add('count 8 9')
+        memory.add('count 9 10')
 
-    def initializeAddition(goal='add ?num1 ?num2 count:None?count sum:None?sum'):
+    def initializeActrAgent(goal='add ?num1 ?num2 count:None?count sum:None?sum'):
         goal.modify(count=0, sum=num1)
         memory.request('count ?num1 ?next')
+        print 'initializeActrAgent'
 
-    def terminateAddition(goal='add ?num1 ?num2 count:?num2 sum:?sum'):
-        goal.set('result ?sum')
-        print sum
-
-    def incrementSum(goal='add ?num1 ?num2 count:?count!?num2 sum:?sum',
-                     retrieve='count ?sum ?next'):
-        goal.modify(sum=next)
-        memory.request('count ?count ?n2')
-
-    def incrementCount(goal='add ?num1 ?num2 count:?count sum:?sum',
-                       retrieve='count ?count ?next'):
-        goal.modify(count=next)
-        memory.request('count ?sum ?n2')
-
+    def newMarine(goal='marine:yes'):
+        goal.modify('marine:no')
+        print 'newMarine'
 
 
 class TerranAgent(base_agent.BaseAgent):
@@ -71,6 +64,10 @@ class TerranAgent(base_agent.BaseAgent):
         # 2 = build barracks
         # 3 = build marine
         # 4 = attack enemy
+
+        self.model = ActrAgent()
+        self.model.goal.set('attack marines need:10 count:None')
+        self.model.run()
 
     def unit_type_is_selected(self, obs, unit_type):
         if (len(obs.observation.single_select) > 0 and
@@ -112,6 +109,7 @@ class TerranAgent(base_agent.BaseAgent):
             center = random.choice(centers)
             self.cx = center.x
             self.cy = center.y
+
 
 
         depots = self.get_units_by_type(obs, units.Terran.SupplyDepot)
@@ -209,9 +207,7 @@ def main(unused_argv):
                 timesteps = env.reset()
                 agent.reset()
 
-                model = Addition()
-                model.goal.set('add 5 2 count:None sum:None')
-                model.run()
+
 
                 while True:
                     step_actions = [agent.step(timesteps[0])]

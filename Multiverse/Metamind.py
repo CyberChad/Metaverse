@@ -13,8 +13,8 @@ from ccm.lib.actr import *
 
 from ccm import *
 
-class Addition(ACTR):
-    goal = Buffer()
+class Agent(ACTR):
+    focus = Buffer()
     retrieve = Buffer()
     memory = Memory(retrieve)
 
@@ -28,22 +28,28 @@ class Addition(ACTR):
         memory.add('count 6 7')
         memory.add('count 7 8')
 
-    def initializeAddition(goal='add ?num1 ?num2 count:None?count sum:None?sum'):
-        goal.modify(count=0, sum=num1)
+        focus.set('add 5 2 count:None sum:None')
+
+    def initializeAddition(focus='add ?num1 ?num2 count:None?count sum:None?sum'):
+        #print "initializeAddition"
+        focus.modify(count=0, sum=num1)
         memory.request('count ?num1 ?next')
 
-    def terminateAddition(goal='add ?num1 ?num2 count:?num2 sum:?sum'):
-        goal.set('result ?sum')
-        print sum
+    def terminateAddition(focus='add ?num1 ?num2 count:?num2 sum:?sum'):
+        #print "terminateAddition"
+        focus.set('result ?sum')
+        #print sum
 
-    def incrementSum(goal='add ?num1 ?num2 count:?count!?num2 sum:?sum',
+    def incrementSum(focus='add ?num1 ?num2 count:?count!?num2 sum:?sum',
                      retrieve='count ?sum ?next'):
-        goal.modify(sum=next)
+        #print "incrementSum"
+        focus.modify(sum=next)
         memory.request('count ?count ?n2')
 
-    def incrementCount(goal='add ?num1 ?num2 count:?count sum:?sum',
+    def incrementCount(focus='add ?num1 ?num2 count:?count sum:?sum',
                        retrieve='count ?count ?next'):
-        goal.modify(count=next)
+        #print "incrementCount"
+        focus.modify(count=next)
         memory.request('count ?sum ?n2')
 
 
@@ -90,7 +96,8 @@ class Environments:
     def __init__(self, envConfig):
         self.envConfig = envConfig #holds the configuration file
 
-
+class StarcraftEnvironment(Model):
+    pass
 
 class Utilities:
 
@@ -123,10 +130,15 @@ class Utilities:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    print(fib(10))
-    model = Addition()
-    model.goal.set('add 5 2 count:None sum:None')
-    model.run()
+    #print(fib(10))
+
+    player = Agent()
+
+    empty_env = StarcraftEnvironment()
+    empty_env.agent = player
+    log_everything(empty_env)
+
+    empty_env.run()
 
 
 
