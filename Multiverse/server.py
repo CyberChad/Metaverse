@@ -1,7 +1,13 @@
 import socket
 import time
+import pickle
 
 HEADERSIZE = 10
+
+d = {1: "hey", 2: "there"}
+
+msg = pickle.dumps(d)
+msg = bytes(f'{len(msg):<{HEADERSIZE}}', "utf-8") + msg
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #IPv4, TCP stream
 s.bind((socket.gethostname(), 12345))
@@ -11,18 +17,9 @@ while True:
     clientsocket, address = s.accept() #socket id and IP of client
     print(f"Connection from {address} has been established!")
 
-    msg = "Welcome to the server!"
-    msg = f'{len(msg):<{HEADERSIZE}}' + msg
+    #msg = "Welcome to the server!"
+    msg = pickle.dumps(d)
+    msg = bytes(f'{len(msg):<{HEADERSIZE}}', "utf-8") + msg
 
-    clientsocket.send(bytes(msg,"utf-8")) #what to send, format
-
-    while True:
-        time.sleep(3)
-        msg = f"The time is! {time.time()}"
-        msg = f'{len(msg):<{HEADERSIZE}}' + msg
-        clientsocket.send(bytes(msg, "utf-8"))  # what to send, format
-
-
-    #clientsocket.close()
-    #print(f"Connection from {address} has been closed!")
+    clientsocket.send(msg) #what to send, format
 
