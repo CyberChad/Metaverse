@@ -8,9 +8,9 @@ class Testing(ACTR):
         goal.set("test")
 
     def test(goal="test"):
-        print "Python ACT-R installation up and running"
+        print("Python ACT-R installation up and running")
 
-        print "The hard part is over :-)"
+        print("The hard part is over :-)")
         goal.set("stop")
 
     def stop_production(goal="stop"):
