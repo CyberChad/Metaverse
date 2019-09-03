@@ -46,61 +46,72 @@ FUNCTIONS = actions.FUNCTIONS
 from ccm import model
 from ccm.lib.actr import *
 
+############### Globals ######################
+
 def _xy_locs(mask):
   """Mask should be a set of bools from comparison with a feature layer."""
   y, x = mask.nonzero()
   return list(zip(x, y))
 
+#********************* ACT-R Stuff **********************
+class GameEnvModel(ccm.Model):
+    next_action=ccm.Model(isa='action',press='no_op')
+    screen=ccm.Model(isa='screen',event='none')
 
+    #def observation(self, obs):
+    #    print(f"agent observation: {obs}")
+    #    self.observation = obs
 
-def action(self,test):
-        log.action=test
-        if test=='A':
-            self.reward=1
-        else:
-            self.reward=0
+class MotorModule(ccm.Model):
+    beacons = 0
+    next_action = ''
 
+    def do_action(self,action):
+        print(f"do the action: {action}")
+        self.parent.parent.next_action = action
+        self.parent.parent.screen.event='none'
+        time.sleep(0.1)
 
-class GameInput(ccm.Model):
-    pass
+#    except KeyboardInterrupt:
+#        pass
+
+# def actr_thread(*args):
+# actrEnv.run()
 
 class ActrAgent(ACTR):
     focus = Buffer()
+    motor = MotorModule()
     visual = Buffer()
     vision_module=SOSVision(visual,delay=0)
 
     retrieve = Buffer()
     memory = Memory(retrieve)
 
-    next_action='no_op'
-
     def init(self):
-        #print('actr init')
-        #self.focus.set('find_beacon')
-        pass
+        print('actr init')
+        self.focus.set('find_beacon')
 
-    def findBeacon(focus='found_beacon'):
+    #def noOp(screen="event:none"):
+    def seeBeacon(screen='event:?beacon'):
         print('found the beacon!')
-        focus.set('no_op')
+        motor.do_action(beacon)
+        self.focus.clear()
 
-    def moveToBeacon(focus='move_to_beacon'):
-        print('moving to beacon!')
-        focus.set('no_op')
+    def moveToBeacon(screen='event:?event'):
+        motor.do_action(event)
+        #print(f'production:{moving}')
+        self.focus.clear()
 
-class SimpleModel(ccm.Model):
-    pass
-
+#--------------------------- StarCraft Stuff ---------------------
 class BeaconAgent(base_agent.BaseAgent):
   """An agent specifically for solving the MoveToBeacon map."""
   #actr_env =
   def __init__(self):
       super(BeaconAgent, self).__init__()
 
+      self.status = 'none'
+      self.target = numpy.zeros(2)
   #def nextAction(actions.FUNCTIONS func):
-
-
-  def actr_setup(self,actr):
-      self.myAgent = actr
 
 
   def step(self, obs):
@@ -109,7 +120,6 @@ class BeaconAgent(base_agent.BaseAgent):
 
     #self.response = [_NO_OP, []] #default response is to do nothing
 
-
     if FUNCTIONS.Move_screen.id in obs.observation.available_actions:
 
       player_relative = obs.observation.feature_screen.player_relative
@@ -117,28 +127,22 @@ class BeaconAgent(base_agent.BaseAgent):
       beacon = _xy_locs(player_relative == _PLAYER_NEUTRAL)
 
       if not beacon:
-        self.myAgent.focus.set('no_op')
+        actrGameEnv.screen.event = 'none'
         return FUNCTIONS.no_op()
 
       beacon_center = numpy.mean(beacon, axis=0).round()
 
-      self.myAgent.focus.set('found_beacon')
-
-      return FUNCTIONS.Move_screen("now", beacon_center)
+      if numpy.array_equal(beacon_center,self.target):
+          return FUNCTIONS.no_op()
+      else:
+        self.target = beacon_center
+        actrGameEnv.screen.event = 'beacon'
+        self.status = 'moving'
+        return FUNCTIONS.Move_screen("now", beacon_center)
 
     else:
-      self.myAgent.focus.set('move_to_beacon')
+      actrGameEnv.screen.event = 'moving'
       return FUNCTIONS.select_army("select")
-
-class StarCraftEnvironment(ccm.Model):
-    beacons=0
-    def start(self):
-        pass
-#    except KeyboardInterrupt:
-#        pass
-
-#def actr_thread(*args):
-    #actrEnv.run()
 
 def sc2_thread(*args):
 
@@ -175,49 +179,6 @@ def sc2_thread(*args):
             break
         timesteps = sc2env.step(step_actions)
 
-class MatchEnvironment(ccm.Model):
-    def start(self):
-        self.count=1
-        yield 1   # wait one second
-        self.letter=ccm.Model(isa='letter',x=0.5,y=0.5,visible=True)
-        self.letter.text=self.random.choice('BCDFGHJKLMNPQRSTVWXYZ')
-        self.target=self.letter.text
-
-    def press(self,key):
-        self.pressed=key
-        if key==self.target:
-            log.success=True
-        else:
-            log.success=False
-        self.letter.visible=False
-        self.count+=1
-        if self.count==0:
-            self.stop()
-        else:
-            yield 1
-            self.letter.text=self.random.choice('BCDFGHJKLMNPQRSTVWXYZ')
-            self.letter.visible=True
-            self.target=self.letter.text
-
-
-class Model(ACTR):
-    goal = Buffer()
-    visual = Buffer()
-    vision = SOSVision(visual)
-
-    def findUnattendedLetter(goal='attend', vision='busy:False'):
-        vision.request('isa:letter')
-        goal.set('attend')
-
-    def encodeLetter(goal='attend', visual='isa:letter text:?letter'):
-        goal.set('respond ?letter')
-
-    def respond(goal='respond ?letter'):
-        self.parent.press(letter)
-        visual.clear()
-        goal.set('attend')
-
-
 def actr_thread2(*args):
 
     FLAGS(args)
@@ -248,29 +209,32 @@ def actr_thread(*args):
 
     env.run()
 
+#common_model = SimpleModel()
+actrGameEnv = GameEnvModel()
+
 if __name__ == "__main__":
     #app.run(main)
 
-    #model = Addition()
-    #model.goal.set('add 5 2 count:None sum:None')
-    #model.run()
-
     sc2agent = BeaconAgent()
-    actr_model = Model()
-    actr_agent = ActrAgent()
-    actr_agent.focus.set('no_op')
-    sc2agent.actr_setup(deepcopy(actr_agent))
+
+    actrGameEnv.agent = ActrAgent()
+
+    #actr_agent.focus.set('no_op')
+    #sc2agent.actr_setup(deepcopy(actr_agent))
+
+    ccm.log_everything(actrGameEnv)
+    #ccm.log(actrGameEnv)
+
+    game_thread = threading.Thread(target=sc2_thread, args=sys.argv)
+    game_thread.start()
 
     #model_thread = Process(target=actr_thread, args=sys.argv)
-    model_thread = threading.Thread(target=sc2agent.myAgent.run(), args=sys.argv)
+    model_thread = threading.Thread(target=actrGameEnv.run(), args=sys.argv)
     model_thread.start()
 
     #time.sleep(25)
 
     # game_thread = Process(target=sc2_thread, args=sys.argv)
-    game_thread = threading.Thread(target=sc2_thread, args=sys.argv)
-
-    game_thread.start()
 
 
 

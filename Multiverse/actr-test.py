@@ -1,7 +1,11 @@
 import ccm
 
 from ccm.lib.actr import *
-class Testing(ACTR):
+
+class client():
+    pass
+
+class Agent(ACTR):
     goal = Buffer()
 
     def init():
@@ -20,9 +24,9 @@ class MyEnvironment(ccm.Model):
     pass
 
 if __name__ == "__main__":
-    testing = Testing()
+    test_agent = Agent()
     empty_environment = MyEnvironment()
-    empty_environment.agent = testing
+    empty_environment.agent = test_agent
     ccm.log_everything(empty_environment)
     empty_environment.run()
     ccm.finished()
