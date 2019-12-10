@@ -36,7 +36,7 @@ class Addition(ACTR):
 
     def terminateAddition(goal='add ?num1 ?num2 count:?num2 sum:?sum'):
         goal.set('result ?sum')
-        print sum
+        print(sum)
 
     def incrementSum(goal='add ?num1 ?num2 count:?count!?num2 sum:?sum',
                      retrieve='count ?sum ?next'):

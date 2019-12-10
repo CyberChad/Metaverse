@@ -1,8 +1,11 @@
+from __future__ import print_function
+
 from pysc2.agents import base_agent
 from pysc2.env import sc2_env
 from pysc2.lib import actions, features, units
 from absl import app
 import random
+
 
 import logging
 import sys
