@@ -1,17 +1,17 @@
 #from __future__ import print_function
 
 import logging
-import sys
-
 from pysc2.agents import base_agent
 from pysc2.lib import actions
 
-#sys.path.append('../../')
-
-from ccm import model
-from ccm.lib.actr import *
-
 from ccm import *
+from ccm.lib.actr import *
+import sys
+from PyQt5 import QtWidgets, uic
+import pyqtgraph as pg
+
+
+# sys.path.append('../../')
 
 class Agent(ACTR):
     focus = Buffer()
@@ -126,20 +126,39 @@ class Utilities:
         f.close()
 
 
+class MainWindow(QtWidgets.QMainWindow):
+
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+
+        #Load the UI Page
+        uic.loadUi('mainwindow.ui', self)
+
+        #self.plotWidget.plot([1,2,3,4,5,6,7,8,9,10], [30,32,34,32,33,31,29,32,35,45])
+
+        self.graphWidget.plotWidget([1,2,3,4,5,6,7,8,9,10], [30,32,34,32,33,31,29,32,35,45])
+
+    #def plot(self, hour, temperature):
+     #   self.GraphWidget.plot(hour, temperature)
+        #self.plot(hour, temperature)
+
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    #print(fib(10))
+    # logging.basicConfig(level=logging.DEBUG)
+    # #print(fib(10))
+    #
+    # player = Agent()
+    #
+    # empty_env = StarcraftEnvironment()
+    # empty_env.agent = player
+    # log_everything(empty_env)
+    #
+    # empty_env.run()
 
-    player = Agent()
-
-    empty_env = StarcraftEnvironment()
-    empty_env.agent = player
-    log_everything(empty_env)
-
-    empty_env.run()
-
-
+    app = QtWidgets.QApplication(sys.argv)
+    main = MainWindow()
+    main.show()
+    sys.exit(app.exec())
 
 
