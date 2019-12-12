@@ -1,4 +1,4 @@
-# Multiverse
+# Metaverse
 
 ## A Framework for testing Cognitive Agents in a variety of virtual environments
 
