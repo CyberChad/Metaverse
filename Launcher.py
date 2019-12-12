@@ -7,8 +7,8 @@ from pysc2.lib import actions
 from ccm import *
 from ccm.lib.actr import *
 import sys
-from PyQt5 import QtWidgets, uic
-import pyqtgraph as pg
+from PyQt5 import QtWidgets, QtCore, uic
+
 
 
 # sys.path.append('../../')
@@ -125,23 +125,55 @@ class Utilities:
 
         f.close()
 
+from pyqtgraph import PlotWidget
+
+# class MainWindow(QtWidgets.QMainWindow):
+#
+#     def __init__(self, *args, **kwargs):
+#         super(MainWindow, self).__init__(*args, **kwargs)
+#
+#         #Load the UI Page
+#         uic.loadUi('LauncherMain.ui', self)
+#
+#         #self.plot([1,2,3,4,5,6,7,8,9,10], [30,32,34,32,33,31,29,32,35,45])
+#
+#         self.PlotWidget.plot([1,2,3,4,5,6,7,8,9,10], [30,32,34,32,33,31,29,32,35,45])
+#
+#     #def plot(self, hour, temperature):
+#        #self.GraphWidget.plot(hour, temperature)
+
 
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
+        self.setupUi(self)
 
-        #Load the UI Page
-        uic.loadUi('mainwindow.ui', self)
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(800, 600)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.widget = PlotWidget(self.centralwidget)
+        self.widget.setObjectName("graphWidget")
+        self.verticalLayout.addWidget(self.widget)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
 
-        #self.plotWidget.plot([1,2,3,4,5,6,7,8,9,10], [30,32,34,32,33,31,29,32,35,45])
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.graphWidget.plotWidget([1,2,3,4,5,6,7,8,9,10], [30,32,34,32,33,31,29,32,35,45])
-
-    #def plot(self, hour, temperature):
-     #   self.GraphWidget.plot(hour, temperature)
-        #self.plot(hour, temperature)
-
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
 
 if __name__ == "__main__":
@@ -156,8 +188,13 @@ if __name__ == "__main__":
     #
     # empty_env.run()
 
+    import pyqtgraph
+
     app = QtWidgets.QApplication(sys.argv)
     main = MainWindow()
+
+    main.widget.plotItem.plot([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [30, 32, 34, 32, 33, 31, 29, 32, 35, 45])
+
     main.show()
     sys.exit(app.exec())
 
