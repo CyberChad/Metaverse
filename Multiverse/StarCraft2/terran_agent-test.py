@@ -15,37 +15,6 @@ from pysc2.lib import actions
 
 #sys.path.append('../../')
 
-from ccm import model
-from ccm.lib.actr import *
-
-class ActrAgent(ACTR):
-    goal = Buffer()
-    retrieve = Buffer()
-    memory = Memory(retrieve)
-
-    def init():
-        print 'actr init'
-        memory.add('count 0 1')
-        memory.add('count 1 2')
-        memory.add('count 2 3')
-        memory.add('count 3 4')
-        memory.add('count 4 5')
-        memory.add('count 5 6')
-        memory.add('count 6 7')
-        memory.add('count 7 8')
-        memory.add('count 8 9')
-        memory.add('count 9 10')
-
-    def initializeActrAgent(goal='add ?num1 ?num2 count:None?count sum:None?sum'):
-        goal.modify(count=0, sum=num1)
-        memory.request('count ?num1 ?next')
-        print 'initializeActrAgent'
-
-    def newMarine(goal='marine:yes'):
-        goal.modify('marine:no')
-        print 'newMarine'
-
-
 class TerranAgent(base_agent.BaseAgent):
     def __init__(self):
         super(TerranAgent, self).__init__()
@@ -68,9 +37,9 @@ class TerranAgent(base_agent.BaseAgent):
         # 3 = build marine
         # 4 = attack enemy
 
-        self.model = ActrAgent()
-        self.model.goal.set('attack marines need:10 count:None')
-        self.model.run()
+        # self.model = ActrAgent()
+        # self.model.goal.set('attack marines need:10 count:None')
+        # self.model.run()
 
     def unit_type_is_selected(self, obs, unit_type):
         if (len(obs.observation.single_select) > 0 and
@@ -124,7 +93,7 @@ class TerranAgent(base_agent.BaseAgent):
 
                     x = random.randint(self.cx - self.radius, self.cx + self.radius)
                     y = random.randint(self.cy - self.radius, self.cy + self.radius)
-                    print "trying to build a supply depot at " + str(x) + " " + str(y)
+                    print("trying to build a supply depot at " + str(x) + " " + str(y))
                     #plan_unit = 0
                     #self.building_supply = True
                     return actions.FUNCTIONS.Build_SupplyDepot_screen("now", (x,y))
@@ -133,7 +102,7 @@ class TerranAgent(base_agent.BaseAgent):
             if len(scvs) > 0:
                 scv = random.choice(scvs)
                 self.unit_task = 1
-                print "selecting SCV to build supply depot"
+                print("selecting SCV to build supply depot")
                 return actions.FUNCTIONS.select_point("select_all_type", (scv.x, scv.y))
 
 
@@ -146,7 +115,7 @@ class TerranAgent(base_agent.BaseAgent):
                     x = random.randint(self.cx - self.radius, self.cx + self.radius)
                     y = random.randint(self.cy - self.radius, self.cy + self.radius)
 
-                    print "building barracks at "+ str(x) + " " + str(y)
+                    print("building barracks at "+ str(x) + " " + str(y))
 
                     # plan_unit = 0
                     return actions.FUNCTIONS.Build_Barracks_screen("now", (x, y))
@@ -155,7 +124,7 @@ class TerranAgent(base_agent.BaseAgent):
             if len(scvs) > 0:
                 scv = random.choice(scvs)
                 self.unit_task = 2
-                print"selecting SCV to build barracks"
+                print("selecting SCV to build barracks")
                 return actions.FUNCTIONS.select_point("select_all_type", (scv.x, scv.y))
 
         #********** ATTACK LOGIC *************
