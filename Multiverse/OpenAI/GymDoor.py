@@ -44,7 +44,8 @@ action_space = 4
 
 
 #may need this if we have to call the jLOAF module directly
-sys.path.append("/home/chad/github/NMAI/jLOAF-OpenAI/bin")
+
+#sys.path.append("/home/chad/github/NMAI/jLOAF-OpenAI/bin")
 
 class globals():
     env = 0
@@ -87,14 +88,13 @@ class GymEnv(object):
     def isDone(self):
         
         if(DEBUG_MSG) : print("Asking if Done")
+
         return globals.done
     
     def doAction(self, action=None):
         
         if(DEBUG_ACTION): print("Do Action: {0}".format(action))
-        
 
-        
         #action = 1
         state, \
         globals.reward, \
@@ -114,34 +114,44 @@ class GymEnv(object):
         implements = ["Environment.GymEnv"]
 
 
-print ("-- Opening GymDoor Server -- ")
+if __name__=="__main__":
 
-gym_env = GymEnv()
+    print ("-- Opening GymDoor Server -- ")
 
-done = False
+    env = gym.make("MountainCar-v0")
 
+    #gym_env = GymEnv()
 
-gateway = ClientServer(
-    java_parameters=JavaParameters(),
-    python_parameters=PythonParameters(),
-    python_server_entry_point=gym_env)
+    reward = 0
+    total_reward = 0
+    steps = 0
 
-# Make sure that the python code is started first.
-# Then execute: java -cp py4j.jar py4j.examples.SingleThreadClientApplication
+    s = env.reset()
+    done = False
 
+    while steps < 1000:
 
+        #action = heuristic(s)
+        #a = np.argmax(action)
 
+        #0 = left
+        #1 = nothing/break
+        #2 = right
 
+        s, r, done, info = env.step(a)
+        env.render()
+        total_reward += r
+        # if steps % 20 == 0 or done:
 
-#from py4j.java_gateway import JavaGateway //Old Client/Server model
-#gateway = JavaGateway()
-#jLoaf = gateway.jvm.Environment.JloafClient()
+        # output = ','.join(['%.2f' % num for num in s])
+        output = ["{:+0.2f}".format(x) for x in s]
+        output.append(a)
+        print(output)
 
+        # print(["{:+0.2f}".format(x) for x in s]+"{:+0.2f}".format(a))
 
+        # print("step {} total_reward {:+0.2f}".format(steps, total_reward))
 
-
-
-#print ("-- Training Agent --")
-#jLoaf.trainAgent()
-
-#gateway.jvm.java.lang.System.out.println('Hello JVM!!')
+        steps += 1
+        if done:
+            s = env.reset()

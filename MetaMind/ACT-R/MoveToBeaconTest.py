@@ -58,10 +58,6 @@ class GameEnvModel(ccm.Model):
     next_action=ccm.Model(isa='action',press='no_op')
     screen=ccm.Model(isa='screen',event='none')
 
-    #def observation(self, obs):
-    #    print(f"agent observation: {obs}")
-    #    self.observation = obs
-
 class MotorModule(ccm.Model):
     beacons = 0
     next_action = ''
@@ -71,12 +67,6 @@ class MotorModule(ccm.Model):
         self.parent.parent.next_action = action
         self.parent.parent.screen.event='none'
         time.sleep(0.1)
-
-#    except KeyboardInterrupt:
-#        pass
-
-# def actr_thread(*args):
-# actrEnv.run()
 
 class ActrAgent(ACTR):
     focus = Buffer()
@@ -179,7 +169,7 @@ def sc2_thread(*args):
             break
         timesteps = sc2env.step(step_actions)
 
-def actr_thread2(*args):
+def actr_thread2(*args): #not currently used
 
     FLAGS(args)
 
@@ -197,7 +187,7 @@ def actr_thread2(*args):
 
     env.run()
 
-def actr_thread(*args):
+def actr_thread(*args): #not currently used
 
     FLAGS(args)
 

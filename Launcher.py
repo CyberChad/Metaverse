@@ -1,82 +1,15 @@
-#from __future__ import print_function
+# from __future__ import print_function
 
 import logging
 from pysc2.agents import base_agent
 from pysc2.lib import actions
 
-from ccm import *
-from ccm.lib.actr import *
+# from ccm import *
+# from ccm.lib.actr import *
 import sys
-from PyQt5 import QtWidgets, QtCore, uic
-
 
 
 # sys.path.append('../../')
-
-class Agent(ACTR):
-    focus = Buffer()
-    retrieve = Buffer()
-    memory = Memory(retrieve)
-
-    def init():
-        memory.add('count 0 1')
-        memory.add('count 1 2')
-        memory.add('count 2 3')
-        memory.add('count 3 4')
-        memory.add('count 4 5')
-        memory.add('count 5 6')
-        memory.add('count 6 7')
-        memory.add('count 7 8')
-
-        focus.set('add 5 2 count:None sum:None')
-
-    def initializeAddition(focus='add ?num1 ?num2 count:None?count sum:None?sum'):
-        #print "initializeAddition"
-        focus.modify(count=0, sum=num1)
-        memory.request('count ?num1 ?next')
-
-    def terminateAddition(focus='add ?num1 ?num2 count:?num2 sum:?sum'):
-        #print "terminateAddition"
-        focus.set('result ?sum')
-        #print sum
-
-    def incrementSum(focus='add ?num1 ?num2 count:?count!?num2 sum:?sum',
-                     retrieve='count ?sum ?next'):
-        #print "incrementSum"
-        focus.modify(sum=next)
-        memory.request('count ?count ?n2')
-
-    def incrementCount(focus='add ?num1 ?num2 count:?count sum:?sum',
-                       retrieve='count ?count ?next'):
-        #print "incrementCount"
-        focus.modify(count=next)
-        memory.request('count ?sum ?n2')
-
-
-#model = Addition()
-#model.goal.set('add 5 2 count:None sum:None')
-#model.run()
-
-
-def sum_two_numbers(a, b):
-    return a + b            # return result to the function caller
-
-c = sum_two_numbers(3, 12)  # assign result of function execution to variable 'c'
-
-
-def fib(n):
-    """This is documentation string for function. It'll be available by fib.__doc__()
-    Return a list containing the Fibonacci series up to n."""
-    result = []
-    a = 1
-    b = 1
-    while a < n:
-        result.append(a)
-        tmp_var = b
-        b = a + b
-        a = tmp_var
-    return result
-
 
 class SimpleAgent(base_agent.BaseAgent):
     def step(self, obs):
@@ -84,32 +17,30 @@ class SimpleAgent(base_agent.BaseAgent):
 
         return actions.FunctionCall(actions.FUNCTIONS.no_op.id, [])
 
+
 # holds the different cognitive architectures that we have available
 class Architectures:
     def __init__(self, cogArchConfig):
-        self.cogArchConfig = cogArchConfig #holds the configuration file
-
+        self.cogArchConfig = cogArchConfig  # holds the configuration file
 
 
 # the environments we can test our agents in
 class Environments:
     def __init__(self, envConfig):
-        self.envConfig = envConfig #holds the configuration file
+        self.envConfig = envConfig  # holds the configuration file
 
-class StarcraftEnvironment(Model):
-    pass
 
 class Utilities:
 
     def readFile(file):
 
-        f = open(file, "r")   # here we open file "input.txt". Second argument used to identify that we want to read file
-                                     # Note: if you want to write to the file use "w" as second argument
+        f = open(file, "r")  # here we open file "input.txt". Second argument used to identify that we want to read file
+        # Note: if you want to write to the file use "w" as second argument
 
-        for line in f.readlines():   # read lines
+        for line in f.readlines():  # read lines
             print(line)
 
-        f.close()                   # It's important to close the file to free up any system resources.
+        f.close()  # It's important to close the file to free up any system resources.
 
     def writeFile(fileName):
 
@@ -124,6 +55,7 @@ class Utilities:
             f.write(i)
 
         f.close()
+
 
 from pyqtgraph import PlotWidget
 
@@ -142,60 +74,156 @@ from pyqtgraph import PlotWidget
 #     #def plot(self, hour, temperature):
 #        #self.GraphWidget.plot(hour, temperature)
 
+from PyQt5.QtWidgets import QMainWindow, QAction, QMenu, qApp, QApplication, QTextEdit, QFrame
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QApplication)
 
-class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
-        self.setupUi(self)
+class MainWindow(QMainWindow):
 
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.widget = PlotWidget(self.centralwidget)
-        self.widget.setObjectName("graphWidget")
-        self.verticalLayout.addWidget(self.widget)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+    def initUI(self):
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        hbox = QHBoxLayout(self)
+        topleft = QFrame(self)
+        topleft.setFrameShape(QFrame.StyledPanel)
+
+        topright = QFrame(self)
+        topright.setFrameShape(QFrame.StyledPanel)
+
+        bottom = QFrame(self)
+        bottom.setFrameShape(QFrame.StyledPanel)
+
+        # Main window object and top frame
+        self.setObjectName("MainWindow")
+        self.setWindowTitle('Metaverse Launcher')
+        self.setWindowIcon(QIcon('QtGUI/cyberbrain.jfif'))
+
+        textEdit = QTextEdit()
+        self.setCentralWidget(textEdit)
+
+        okButton = QPushButton("OK")
+        cancelButton = QPushButton("Cancel")
+
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(okButton)
+        hbox.addWidget(cancelButton)
+
+        vbox = QVBoxLayout()
+        vbox.addStretch(1)
+        vbox.addLayout(hbox)
+        self.setLayout(vbox)
+
+        # init bottom status bar
+        self.statusbar = self.statusBar()
+        self.statusbar.showMessage('Ready')
+
+        # init Main Menu
+
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&File')
+
+        newAct = QAction('New', self)
+        fileMenu.addAction(newAct)
+
+        impMenu = QMenu('Import', self)
+        impAct = QAction('Import configuration', self)
+        impMenu.addAction(impAct)
+        fileMenu.addMenu(impMenu)
+
+        exitAct = QAction(QIcon('exit.png'), '&Exit', self)
+        exitAct.setShortcut('Ctrl+Q')
+        exitAct.setStatusTip('Exit application')
+        exitAct.triggered.connect(qApp.quit)
+        fileMenu.addAction(exitAct)
+
+        # View menu
+        viewMenu = menubar.addMenu('View')
+        viewStatAct = QAction('View statusbar', self, checkable=True)
+        viewStatAct.setStatusTip('View statusbar')
+        viewStatAct.setChecked(True)
+        viewStatAct.triggered.connect(self.toggleMenu)
+
+        viewMenu.addAction(viewStatAct)
+
+        self.toolbar = self.addToolBar('Exit')
+        self.toolbar.addAction(exitAct)
+
+        # init size, position
+        self.resize(800, 600)
+        self.show()
+
+    def contextMenuEvent(self, event):
+        cmenu = QMenu(self)
+
+        newAct = cmenu.addAction("New")
+        opnAct = cmenu.addAction("Open")
+        quitAct = cmenu.addAction("Quit")
+        action = cmenu.exec_(self.mapToGlobal(event.pos()))
+
+        if action == quitAct:
+            qApp.quit()
+
+    def toggleMenu(self, state):
+
+        if state:
+            self.statusbar.show()
+        else:
+            self.statusbar.hide()
 
 
 if __name__ == "__main__":
-    # logging.basicConfig(level=logging.DEBUG)
-    # #print(fib(10))
+    app = QApplication(sys.argv)
+
+    #launcher = MainWindow()
+    #sys.exit(app.exec_())
+
+    print("the start of something amazing...")
+
+    # *************************************
+    # Choose cognitive architecture
+    # *************************************
     #
-    # player = Agent()
+    #     > ACT-R
+    #     > SOAR
+    #     > SIGMA?
     #
-    # empty_env = StarcraftEnvironment()
-    # empty_env.agent = player
-    # log_everything(empty_env)
+    #     Choose architecture sub-options for:
     #
-    # empty_env.run()
+    #         > Declarative Memory
+    #
+    #         > Procedural Memory
+    #
+    #         > Others??
+    #
+    # *************************************
+    # Choose Environment:
+    # *************************************
+    #     > Gym
+    #     > StarCraft2
+    #     > HELK or Qemu machine?
+    #
+    #     Configure environment-specific options:
+    #
+    #         > map or challenge
+    #
+    #         > single or multi-agent
+    #
+    #         > difficulty rating
+    #
+    # *************************************
+    # Configure Experiment Type:
+    # *************************************
+    #
+    #     > number of agents per environment??
+    #
+    #     > number of runs per agent??
 
-    import pyqtgraph
 
-    app = QtWidgets.QApplication(sys.argv)
-    main = MainWindow()
 
-    main.widget.plotItem.plot([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [30, 32, 34, 32, 33, 31, 29, 32, 35, 45])
-
-    main.show()
-    sys.exit(app.exec())
 
 

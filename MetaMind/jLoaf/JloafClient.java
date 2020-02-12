@@ -107,10 +107,6 @@ public class JloafClient
 				
 	}
 	
-
-		
-
-
 	/*
 	 * outputs the casebase passed to it in a .cb file with the name also passed to it
 	 * @param cb the casebase to be saved

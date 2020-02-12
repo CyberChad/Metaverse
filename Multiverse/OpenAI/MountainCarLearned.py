@@ -14,8 +14,6 @@ import gym
 from gym import wrappers
 from numpy import argmax
 
-
-
 def heuristic(observation):
 
     parameters = np.array([\
@@ -55,8 +53,6 @@ if __name__=="__main__":
     total_reward = 0
     steps = 0
 
-
-    
     s = env.reset()
     
     while steps < 1000:

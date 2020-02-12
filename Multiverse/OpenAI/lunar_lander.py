@@ -392,7 +392,7 @@ def heuristic(env, s):
 if __name__=="__main__":
     #env = LunarLander()
     env = LunarLander()
-    s = env.reset()
+    #s = env.reset()
     total_reward = 0
     steps = 0
     
@@ -414,4 +414,5 @@ if __name__=="__main__":
         
         steps += 1
         if done: 
-            s = env.reset()
+            #s = env.reset()
+            pass
