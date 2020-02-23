@@ -1,5 +1,4 @@
 # Memory - from Laird et al 37t Soar Workshop
-
 # Declarative and procedural LTMs contain symbol* structures and associated quantitative metadata
 # Global communication is provided by a short-term WM
 # Global control is provided by procedural LTM
@@ -18,7 +17,33 @@
 
 class Memory():
     def __init(self):
+        pass
 
+class LTM(Memory): #Long-term Memory
+    def __init(self):
+        pass
 
-class WorkingMemory
+class WorkingMemory(Memory):
+    def __init(self):
+        pass
 
+class Declarative(LTM): #
+    def __init(self):
+        retrievalBuffer = {}
+
+    #one buffer named retrieval
+
+class Procedural(LTM):
+    def __init(self):
+        pass
+
+class Working(Memory): #also called Goal Module in ACT-R
+    def __init(self):
+        goalBuffer = {} #Dorsal Lateral Pre-Frontal Cortex#one buffer named goal, holds control info;
+
+#only responds to request to create a new goal chunk, placing it in the goal buffer
+
+class Chunk():
+    def __init(self, chunkSlots):
+        self.type = None #category for the knowledge represented in slots; not in CMC, only aids modeller
+        self.slots = chunkSlots

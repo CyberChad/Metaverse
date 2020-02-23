@@ -20,6 +20,8 @@ class ACT-R():
     Manual Buffer (Motor Cortex)
 
 
+
+
 class SOAR():
 
     S
