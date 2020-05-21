@@ -1,4 +1,5 @@
 # Memory - from Laird et al 37t Soar Workshop
+
 # Declarative and procedural LTMs contain symbol* structures and associated quantitative metadata
 # Global communication is provided by a short-term WM
 # Global control is provided by procedural LTM
@@ -7,6 +8,7 @@
 # Factual knowledge is provided by declarative LTM
 
 #Learning  - from Laird et al 37t Soar Workshop
+
 # All forms of LTM content are learnable
 # Learning occurs online and incrementally, as a side effect of performance and is often based on an inversion of the flow of information from performance
 # Procedural learning involves at least reinforcement learning and procedural composition

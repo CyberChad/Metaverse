@@ -9,7 +9,7 @@ import numpy as np
 import ccm
 from ccm.lib.actr import *
 
-from gym_http_client import Client
+#from gym_http_client import Client
 
 
 def heuristic(observation):
