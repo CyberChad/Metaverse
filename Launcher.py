@@ -11,6 +11,8 @@ import sys
 
 # sys.path.append('../../')
 
+#test update 3
+
 class SimpleAgent(base_agent.BaseAgent):
     def step(self, obs):
         super(SimpleAgent, self).step(obs)
