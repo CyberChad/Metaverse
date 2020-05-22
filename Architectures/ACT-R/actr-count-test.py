@@ -1,13 +1,14 @@
-import ccm
+
 from ccm import model
 from ccm.lib.actr import *
+
+
+
 
 class ActrAgent(ACTR):
     goal = Buffer()
     retrieve = Buffer()
     memory = Memory(retrieve)
-
-
 
     def init():
         memory.add('count 0 1')
