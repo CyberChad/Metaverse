@@ -24,9 +24,15 @@ class MyEnvironment(ccm.Model):
     pass
 
 if __name__ == "__main__":
+
     test_agent = Agent()
+
     empty_environment = MyEnvironment()
+
     empty_environment.agent = test_agent
+
     ccm.log_everything(empty_environment)
+
     empty_environment.run()
+
     ccm.finished()

@@ -7,6 +7,7 @@
 # Complex behavior arises from a sequence of independent cognitive cycles that operate in their local context
 
 
+
 class ACT-R():
 
     Intentional Module (aPFC)

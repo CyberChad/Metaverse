@@ -1,9 +1,5 @@
-
-from ccm import model
+import ccm
 from ccm.lib.actr import *
-
-
-
 
 class ActrAgent(ACTR):
     goal = Buffer()
