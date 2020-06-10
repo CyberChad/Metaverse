@@ -1,0 +1,16 @@
+sp {answer*retrieve-goal*copy-goal*StateNoChange*t5-1
+    (state <s1> ^cue2 goal)
+    (<s1> -^deleted <d1>)
+    (<s1> -^goal <g1>)
+    (<s1> ^cue1 handle)
+    (<s1> ^superstate nil)
+    -->
+    (<s1> ^goal <g2> +)
+    (<g2> ^handle goal +)
+    (<g2> ^procedural <p1> +)
+    (<p1> ^arg1 <a1> +)
+    (<g2> ^predicate <p2> +)
+    (<p2> ^1 <i1> +)
+    (<i1> ^default <d2> +)
+    (<d2> ^name pantry +)
+}

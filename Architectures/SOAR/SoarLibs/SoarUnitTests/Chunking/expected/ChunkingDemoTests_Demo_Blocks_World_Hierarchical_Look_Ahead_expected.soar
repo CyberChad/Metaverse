@@ -1,0 +1,17 @@
+sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t37-1
+    (state <s1> ^name move-block ^problem-space <p1> ^desired <d1>
+          ^top-state <t1> ^operator <o6> +)
+    (<p1> ^name pick-up-put-down)
+    (<d1> ^destination <d2> ^moving-block { <m1> <> nothing })
+    (<t1> ^gripper <g1> ^object <o1> ^object <o2> ^object <o3> ^object <o4>
+          ^ontop <o5>)
+    (<g1> ^holding <m1>)
+    (<o1> ^name A)
+    (<o2> ^name B)
+    (<o3> ^name C)
+    (<o4> ^name table)
+    (<o5> -^bottom-block <b1> ^top-block <m1>)
+    (<o6> ^destination <d2> ^name put-down)
+    -->
+    (<s1> ^operator <o6> >)
+}
