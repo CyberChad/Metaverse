@@ -47,8 +47,8 @@ class ActrEnvModel(ccm.Model):
         print("start ActrEnvModel")
         # Set up local environment for testing
         # env_id = 'CartPole-v0'
-        env_id = 'MountainCar-v0'
-        # env_id = 'LunarLander-v2'
+        #env_id = 'MountainCar-v0'
+        env_id = 'LunarLander-v2'
         # env_id = 'SpaceInvaders-v1'
         env = gym.make(env_id)
         self.state = env.reset()
@@ -142,12 +142,11 @@ def gym_env(*args):
 
     # Set up local environment for testing
     # env_id = 'CartPole-v0'
-    env_id = 'MountainCar-v0'
-    # env_id = 'LunarLander-v2'
+    #env_id = 'MountainCar-v0'
+    env_id = 'LunarLander-v2'
     # env_id = 'SpaceInvaders-v1'
     env = gym.make(env_id)
     state = env.reset()
-
 
     max_steps = 200
     reward = 0

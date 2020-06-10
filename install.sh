@@ -9,14 +9,18 @@ sudo apt install python-pip
 #gui packages
 sudo apt install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
 
-#installer
-wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+#big installer
+#wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+#mini installer
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 
+#build environment for soar
+sudo apt install build-essential swig python-all-dev
 
-#soar
+#soar requires the jdk 8, and cannot run with 11+. Need to add this repo from archives
 sudo apt repository ppa:openjdk-r/ppa
 sudo apt update
-sudo apt install build-essential swig openjdk-8-jdk python-all-dev
+openjdk-8-jdk
 
 #build soar
 cd Soar

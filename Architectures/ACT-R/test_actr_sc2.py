@@ -151,8 +151,8 @@ def sc2_thread(*args):
         step_mul=1,
         game_steps_per_episode=0,
         #screen_size_px=(128, 128),
-        # visualize=True) as env:
-        visualize=False)
+        visualize=True)
+        #visualize=False)
 
     sc2agent.setup(sc2env.observation_spec(), sc2env.action_spec())
 
