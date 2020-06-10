@@ -6,3 +6,7 @@ ccmsuite
 MetaMind/__pycache__/
 
 *.json
+
+Architectures/__pycache__/
+
+venv/
