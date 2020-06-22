@@ -34,7 +34,7 @@ def heuristic(observation):
 
     return next_action
 
-#********************** ACT-R Stuff ******************
+#********************** ACT-R_CMU Stuff ******************
 class ActrEnvModel(ccm.Model):
 
     #next_action=ccm.Model(isa='action',press='no_op')
@@ -47,8 +47,8 @@ class ActrEnvModel(ccm.Model):
         print("start ActrEnvModel")
         # Set up local environment for testing
         # env_id = 'CartPole-v0'
-        #env_id = 'MountainCar-v0'
-        env_id = 'LunarLander-v2'
+        env_id = 'MountainCar-v0'
+        # env_id = 'LunarLander-v2'
         # env_id = 'SpaceInvaders-v1'
         env = gym.make(env_id)
         self.state = env.reset()
@@ -70,8 +70,6 @@ class ActrEnvModel(ccm.Model):
 
             #envModel.state = state
             # envModel.screen.event = 'update'
-
-
 
             self.state, reward, done, info = env.step(self.next_action)
 
@@ -120,7 +118,7 @@ class ActrAgent(ACTR):
     memory = Memory(retrieve)
 
     def init():
-        print("ACT-R agent init")
+        print("ACT-R_CMU agent init")
         focus.set('game:play')
 
     def action(focus='game:play'):
@@ -142,8 +140,8 @@ def gym_env(*args):
 
     # Set up local environment for testing
     # env_id = 'CartPole-v0'
-    #env_id = 'MountainCar-v0'
-    env_id = 'LunarLander-v2'
+    env_id = 'MountainCar-v0'
+    #env_id = 'LunarLander-v2'
     # env_id = 'SpaceInvaders-v1'
     env = gym.make(env_id)
     state = env.reset()

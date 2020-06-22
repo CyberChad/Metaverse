@@ -4,3 +4,6 @@
 # Attentional bottleneck constrains information available in WM
 # Perception can be influenced by top-down information from WM
 
+class CMPerception():
+    __init__():
+        print("CMProc Init")

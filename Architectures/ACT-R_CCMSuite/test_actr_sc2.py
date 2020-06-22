@@ -53,7 +53,7 @@ def _xy_locs(mask):
   y, x = mask.nonzero()
   return list(zip(x, y))
 
-#********************* ACT-R Stuff **********************
+#********************* ACT-R_CMU Stuff **********************
 class GameEnvModel(ccm.Model):
     next_action=ccm.Model(isa='action',press='no_op')
     screen=ccm.Model(isa='screen',event='none')

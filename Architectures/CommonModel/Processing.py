@@ -8,6 +8,8 @@
 
 
 
+
+
 class ACT-R():
 
     Intentional Module (aPFC)
@@ -19,9 +21,6 @@ class ACT-R():
     Visual Buffer (Parietal Cortex)
 
     Manual Buffer (Motor Cortex)
-
-
-
 
 class SOAR():
 

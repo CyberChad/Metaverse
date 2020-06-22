@@ -1,8 +1,8 @@
 # from __future__ import print_function
 
 import logging
-from pysc2.agents import base_agent
-from pysc2.lib import actions
+#from pysc2.agents import base_agent
+#from pysc2.lib import actions
 
 # from ccm import *
 # from ccm.lib.actr import *
@@ -12,13 +12,13 @@ import sys
 # sys.path.append('../../')
 
 #test update 3
-
-class SimpleAgent(base_agent.BaseAgent):
-    def step(self, obs):
-        super(SimpleAgent, self).step(obs)
-
-        return actions.FunctionCall(actions.FUNCTIONS.no_op.id, [])
-
+#
+# class SimpleAgent(base_agent.BaseAgent):
+#     def step(self, obs):
+#         super(SimpleAgent, self).step(obs)
+#
+#         return actions.FunctionCall(actions.FUNCTIONS.no_op.id, [])
+#
 
 # holds the different cognitive architectures that we have available
 class Architectures:
@@ -63,8 +63,8 @@ from pyqtgraph import PlotWidget
 
 # class MainWindow(QtWidgets.QMainWindow):
 #
-#     def __init__(self, *args, **kwargs):
-#         super(MainWindow, self).__init__(*args, **kwargs)
+#     def __init__.py(self, *args, **kwargs):
+#         super(MainWindow, self).__init__.py(*args, **kwargs)
 #
 #         #Load the UI Page
 #         uic.loadUi('LauncherMain.ui', self)
@@ -112,8 +112,8 @@ class MainWindow(QMainWindow):
 
         hbox = QHBoxLayout()
         hbox.addStretch(1)
-        hbox.addWidget(okButton)
-        hbox.addWidget(cancelButton)
+        #hbox.addWidget(okButton)
+        #hbox.addWidget(cancelButton)
 
         vbox = QVBoxLayout()
         vbox.addStretch(1)
@@ -177,6 +177,10 @@ class MainWindow(QMainWindow):
         else:
             self.statusbar.hide()
 
+
+##### Almost like a seperate app ***********
+
+
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph.console
@@ -210,6 +214,7 @@ from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, reg
 
 ## test subclassing parameters
 ## This parameter automatically generates two child parameters which are always reciprocals of each other
+
 class ComplexParameter(pTypes.GroupParameter):
     def __init__(self, **opts):
         opts['type'] = 'bool'
@@ -251,7 +256,7 @@ class ScalableGroup(pTypes.GroupParameter):
 
 params = [
     {'name': 'Agent', 'type': 'group', 'children': [
-        {'name': 'Architecture', 'type': 'list', 'values': ["ACT-R","SOAR","Sigma"], 'value': 1},
+        {'name': 'Architecture', 'type': 'list', 'values': ["ACT-R_CMU","SOAR","Sigma"], 'value': 1},
         {'name': 'Integer', 'type': 'int', 'value': 10},
         {'name': 'Float', 'type': 'float', 'value': 10.5, 'step': 0.1},
         {'name': 'String', 'type': 'str', 'value': "hi"},
@@ -380,10 +385,36 @@ dRight.addWidget(wDeclMem)
 dRight.addWidget(wMotor)
 dRight.addWidget(wPerc)
 
+launchButton = QPushButton("Launch")
+launchButton.clicked.connect(on_click())
+
+#cancelButton = QPushButton("Cancel")
+
+#hbox = QHBoxLayout()
+#hbox.addStretch(1)
+
+#hbox = QHBoxLayout()
+#hbox.addStretch(1)
+#hbox.addWidget(okButton)
+#hbox.addWidget(cancelButton)
+
+#vbox = QVBoxLayout()
+#vbox.addStretch(1)
+#vbox.addLayout(hbox)
+
+dBottom.addWidget(launchButton)
+
+def on_click():
+    print('Launch Button Clicked')
+#dBottom.addWidget(cancelButton)
+
+#dBottom.addWidget(vbox)
+
 win.show()
 
 
 if __name__ == "__main__":
+
     #app = QApplication(sys.argv)
     #launcher = MainWindow()
     #sys.exit(app.exec_())
@@ -398,7 +429,7 @@ if __name__ == "__main__":
     # Choose cognitive architecture
     # *************************************
     #
-    #     > ACT-R
+    #     > ACT-R_CMU
     #     > SOAR
     #     > SIGMA?
     #

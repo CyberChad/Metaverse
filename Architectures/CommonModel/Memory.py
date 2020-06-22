@@ -17,6 +17,8 @@
 # Declarative learning involves the acquisition of facts and tuning of their metadata
 # More complex forms of learning involve combinations of the fixed set of simpler forms of learning
 
+import
+
 class Memory():
     def __init(self):
         pass
@@ -39,7 +41,7 @@ class Procedural(LTM):
     def __init(self):
         pass
 
-class Working(Memory): #also called Goal Module in ACT-R
+class Working(Memory): #also called Goal Module in ACT-R_CMU
     def __init(self):
         goalBuffer = {} #Dorsal Lateral Pre-Frontal Cortex#one buffer named goal, holds control info;
 

@@ -1,5 +1,13 @@
 import ccm
 from ccm.lib.actr import *
+from Architectures.SOAR.SoarLibs import Python_sml_ClientInterface as sml
+
+
+
+cmcGoal = metaBuffer()
+cmcRetrieve = metaBuffer()
+cmcMemory = metaMemory()
+
 
 class ActrAgent(ACTR):
     goal = Buffer()
@@ -41,7 +49,7 @@ class MotorModule(ccm.Model):
 
 if __name__ == "__main__":
 
-    # init ACT-R agent player
+    # init ACT-R_CMU agent player
     model = ActrAgent()
     model.goal.set('add 5 2 count:None sum:None')
     model.run()
