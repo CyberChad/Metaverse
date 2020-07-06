@@ -1,7 +1,4 @@
-# Very simple agent that copies a number from the input link, 
-# Then increase it by ever growing amounts
-# 
-# Will print 1, 3, 6, 10, 15, 21, etc.
+
 
 sp {topstate*propose*init-agent
    (state <s> ^superstate nil

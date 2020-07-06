@@ -1,13 +1,19 @@
 import sys
+import os
+import subprocess
 import time as testtime
 import threading
 
-#CCMSuite includes
+#ACTR_CCMSuite includes
 import ccm
 from ccm.lib.actr import *
 
-#Jakdot includes
+#ACTR_Jakdot includes
 import pyactr as actr
+
+#ACTR_CMU includes
+
+
 
 #Soar includes
 from Architectures.SOAR.pysoarlib import *
@@ -207,6 +213,18 @@ def test_soar(start,end):
 
 if __name__ == "__main__":
 
+    #start ACTR_CMU service....
+
+    os.system("echo Starting ACT-R CMU....")
+    os.system("")
+    list_files = subprocess.run(["ls", "-l"])
+    print("The exit code was: %d" % list_files.returncode)
+
+    path_to_CMU = "../../../CMU_ACT-R"
+    launch_CMU_cmd = "run-act-r.command"
+
+    #os.system("../../../CMU_ACT-R/run-act-r.command")
+
     start = 0
     end = 5
 
@@ -218,11 +236,12 @@ if __name__ == "__main__":
 
     #run in parallel
 
-    actr_thread = threading.Thread(target=test_actr(start,end))
-    soar_thread = threading.Thread(target=test_soar(start,end))
-    jakdot_thread = threading.Thread(target=test_jakdot(start,end))
-    actr_thread.start()
-    soar_thread.start()
-    jakdot_thread.start()
+    # actr_thread = threading.Thread(target=test_actr(start,end))
+    # soar_thread = threading.Thread(target=test_soar(start,end))
+    # jakdot_thread = threading.Thread(target=test_jakdot(start,end))
+    #
+    # actr_thread.start()
+    # soar_thread.start()
+    # jakdot_thread.start()
 
 

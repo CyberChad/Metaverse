@@ -1,0 +1,37 @@
+#Very simple agent that copies a number from the input link,
+#then increase it by one each step
+
+#Will print n, n+1, n+2, etc....
+
+#ACT-R config stuff
+---
+flags
+  - clear
+
+#add the chunks that are used in Working Memory / Buffers
+
+define chunk types
+
+#add modules (memory, sensory, motor
+
+add the items to Declarative Memory
+
+#Productions for Working Memory
+
+production declaration and name
+LHS conditions
+
+then
+
+RHS results
+
+#Soar config stuff
+---
+agent-name = simple
+
+agent-source = soar_test_counting.soar
+
+verbose = true
+spawn-debugger = false
+write-to-stdout = true
+

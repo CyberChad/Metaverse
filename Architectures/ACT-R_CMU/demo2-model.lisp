@@ -1,5 +1,3 @@
-
-
 (clear-all)
 
 (define-model demo2

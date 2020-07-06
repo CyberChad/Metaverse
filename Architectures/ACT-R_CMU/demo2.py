@@ -1,7 +1,7 @@
 
 import cmuactr as actr
 
-actr.load_act_r_model("ACT-R_CMU:tutorial;unit2;demo2-model.lisp")
+actr.load_act_r_model("/home/user/github/Metaverse/Architectures/ACT-R_CMU/demo2-model.lisp")
 
 response = False
 
@@ -10,7 +10,6 @@ def respond_to_key_press (model,key):
 
     response = key
     actr.clear_exp_window()
-
 
 def experiment(human=False):
 
