@@ -191,7 +191,9 @@ class SimpleConnector(AgentConnector):
             self.num.set_value(self.num.val + number)
         root_id.AddStatusComplete()
 
-def test_actr(start,end):
+
+
+def test_ccmactr(start,end):
     # init ACT-R_CCMSuite counting agent
     model = Count()
     #model.goal.set('countFrom 0 5 starting')
@@ -201,17 +203,10 @@ def test_actr(start,end):
     # model.log = log
     model.run()
 
-def test_soar(start,end):
 
-    print("[[[ Write {} and {} to config file ]]]".format(start,end))
 
-    agent = SoarAgent(config_filename="soar_test_counting.config", write_to_stdout=True)
-    agent.add_connector("simple", SimpleConnector(agent))
-    agent.connect()
-    agent.execute_command("run 12")
-    agent.kill()
-
-if __name__ == "__main__":
+import cmuactr as cmuactr
+def test_cmuactr(start, end):
 
     #start ACTR_CMU service....
 
@@ -225,14 +220,33 @@ if __name__ == "__main__":
 
     #os.system("../../../CMU_ACT-R/run-act-r.command")
 
+    cmuactr.load_act_r_model("/home/user/github/Metaverse/Architectures/ACT-R_CMU/cmu_count_test.lisp")
+    cmuactr.reset()
+    cmuactr.run(10,True)
+
+
+
+def test_soar(start,end):
+
+    print("[[[ Write {} and {} to config file ]]]".format(start,end))
+
+    agent = SoarAgent(config_filename="soar_test_counting.config", write_to_stdout=True)
+    agent.add_connector("simple", SimpleConnector(agent))
+    agent.connect()
+    agent.execute_command("run 12")
+    agent.kill()
+
+if __name__ == "__main__":
+
     start = 0
     end = 5
 
     #run in serial
 
-    # test_actr(start,end)
-    # test_jakdot(start,end)
-    # test_soar(start, end)
+    test_ccmactr(start,end)
+    test_cmuactr(start,end)
+    test_jakdot(start,end)
+    test_soar(start, end)
 
     #run in parallel
 
