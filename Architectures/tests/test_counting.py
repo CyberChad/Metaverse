@@ -233,19 +233,19 @@ def test_soar(start,end):
     agent = SoarAgent(config_filename="soar_test_counting.config", write_to_stdout=True)
     agent.add_connector("simple", SimpleConnector(agent))
     agent.connect()
-    agent.execute_command("run 12")
+    agent.execute_command("run "+str(end))
     agent.kill()
 
 if __name__ == "__main__":
 
-    start = 0
-    end = 5
+    start = 1
+    end = 10
 
     #run in serial
 
-    test_ccmactr(start,end)
-    test_cmuactr(start,end)
-    test_jakdot(start,end)
+    #test_ccmactr(start,end)
+    #test_cmuactr(start,end)
+    #test_jakdot(start,end)
     test_soar(start, end)
 
     #run in parallel

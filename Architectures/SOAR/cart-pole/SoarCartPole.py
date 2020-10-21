@@ -85,12 +85,16 @@ def get_move_command(agent):
         direction = move_cart_cmd['direction']
         
         mapping['move-cart'].CreateStringWME('status', 'complete')
-        
+
+
         if direction == 'left':
-            return 0
+            move_cmd = 0
         else:
-            return 1
-    
+            move_cmd = 1
+
+        print("Soar agent key press: "+str(move_cmd))
+        return move_cmd
+
     return None
 
 def callback_print_message(mid, user_data, agent, message):
