@@ -1,7 +1,6 @@
-import sys
 import os
 import subprocess
-import time as testtime
+import time
 import threading
 
 #ACTR_CCMSuite includes
@@ -220,6 +219,8 @@ def test_cmuactr(start, end):
 
     #os.system("../../../CMU_ACT-R/run-act-r.command")
 
+    time.sleep(2)
+
     cmuactr.load_act_r_model("/home/user/github/Metaverse/Architectures/ACT-R_CMU/cmu_count_test.lisp")
     cmuactr.reset()
     cmuactr.run(10,True)
@@ -230,6 +231,8 @@ def test_soar(start,end):
 
     print("[[[ Write {} and {} to config file ]]]".format(start,end))
 
+    time.sleep(2)
+
     agent = SoarAgent(config_filename="soar_test_counting.config", write_to_stdout=True)
     agent.add_connector("simple", SimpleConnector(agent))
     agent.connect()
@@ -239,23 +242,20 @@ def test_soar(start,end):
 if __name__ == "__main__":
 
     start = 1
-    end = 10
-
+    end = 6
     #run in serial
 
     #test_ccmactr(start,end)
-    #test_cmuactr(start,end)
+    test_cmuactr(start,end)
+    time.sleep(3)
     #test_jakdot(start,end)
     test_soar(start, end)
 
     #run in parallel
-
-    # actr_thread = threading.Thread(target=test_actr(start,end))
-    # soar_thread = threading.Thread(target=test_soar(start,end))
+    #actr_thread = threading.Thread(target=test_cmuactr(start,end))
+    #time.sleep(5)
+    #soar_thread = threading.Thread(target=test_soar(start,end))
     # jakdot_thread = threading.Thread(target=test_jakdot(start,end))
-    #
-    # actr_thread.start()
-    # soar_thread.start()
-    # jakdot_thread.start()
+
 
 

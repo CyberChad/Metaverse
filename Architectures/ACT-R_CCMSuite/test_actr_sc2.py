@@ -56,7 +56,7 @@ def _xy_locs(mask):
 #********************* ACT-R_CMU Stuff **********************
 class GameEnvModel(ccm.Model):
     next_action=ccm.Model(isa='action',press='no_op')
-    screen=ccm.Model(isa='screen',event='none')
+    screen=ccm.Model(isa='screen',event='beacon')
 
 class MotorModule(ccm.Model):
     beacons = 0
@@ -117,7 +117,7 @@ class BeaconAgent(base_agent.BaseAgent):
       beacon = _xy_locs(player_relative == _PLAYER_NEUTRAL)
 
       if not beacon:
-        actrGameEnv.screen.event = 'none'
+        actrGameEnv.screen.event = 'beacon'
         return FUNCTIONS.no_op()
 
       beacon_center = numpy.mean(beacon, axis=0).round()

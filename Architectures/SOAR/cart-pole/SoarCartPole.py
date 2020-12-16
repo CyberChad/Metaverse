@@ -139,6 +139,7 @@ if __name__ == "__main__":
     step_num = 0
     
     print(agent.ExecuteCommandLine("source cart-pole.soar"))
+    #print(agent.ExecuteCommandLine("source cart-naive-approach.soar"))
     
     while True:
         gym_env.render()

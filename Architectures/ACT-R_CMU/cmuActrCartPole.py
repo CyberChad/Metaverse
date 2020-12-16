@@ -21,6 +21,7 @@ human_action = None
 move_cmd = 0
 key_monitor_installed = False
 
+
 #Client thread for human intervention
 class CliThread(threading.Thread):
 
@@ -92,30 +93,19 @@ def update_model_action(obs):
     return model_action
 
 if __name__ == "__main__":
-    # Create the user input thread and queue for return commands
 
+    # Create the user input thread and queue for return commands
     queue_user_cmds = queue.Queue()
     user_cmd_thread = CliThread(queue_user_cmds)
     user_cmd_thread.start()
 
     # Create the ACT-R agent
     need_to_remove = add_key_monitor()
-    #agent_thread = threading.Thread(target=actr.run(10000), args=sys.argv)
-    #agent_thread = threading.Thread(target=actr.run_full_time(1000))
-
-    #agent_thread.start()
 
     # Create the gym environment
     gym_env = gym.make('CartPole-v0')
     observation = gym_env.reset()
-
-
-    #model_thread = threading.Thread(target=actr.run(10000), args=sys.argv)
-    #model_thread.start()
-
     step_num = 0
-
-    #print(agent.ExecuteCommandLine("source cart-pole.soar"))
 
     while True:
         gym_env.render()

@@ -1,4 +1,4 @@
-rl --set learning on
+#srl --set learning on
 indifferent-selection --epsilon-greedy
 
 watch 0

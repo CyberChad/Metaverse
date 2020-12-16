@@ -96,6 +96,7 @@ def main(unused_argv):
                         use_raw_units=True,
                         raw_resolution=64,
                     ),
+                visualize=True
             ) as env:
                 run_loop.run_loop([agent], env)
     except KeyboardInterrupt:

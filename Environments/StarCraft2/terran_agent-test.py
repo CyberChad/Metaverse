@@ -1,5 +1,9 @@
 from __future__ import print_function
 
+import os
+os.environ['MESA_GL_VERSION_OVERRIDE'] = '3.3'
+os.environ['MESA_GLSL_VERSION_OVERRIDE'] = '330'
+
 from pysc2.agents import base_agent
 from pysc2.env import sc2_env
 from pysc2.lib import actions, features, units
@@ -169,7 +173,10 @@ def main(unused_argv):
                                          sc2_env.Difficulty.very_easy)],
                     agent_interface_format=features.AgentInterfaceFormat(
                         feature_dimensions=features.Dimensions(screen=84, minimap=64),
-                        use_feature_units=True),
+                        use_feature_units=True,
+                        rgb_dimensions=features.Dimensions(screen=124, minimap=124),
+                        action_space=actions.ActionSpace.FEATURES,
+                    ),
                     step_mul=16,
                     game_steps_per_episode=0,
                     visualize=True) as env:
@@ -178,8 +185,6 @@ def main(unused_argv):
 
                 timesteps = env.reset()
                 agent.reset()
-
-
 
                 while True:
                     step_actions = [agent.step(timesteps[0])]

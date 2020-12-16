@@ -13,14 +13,10 @@
   (d first 3 second 4 )
   (e first 4 second 5 )
   (f first 5 second 6 )
-  (first-goal start 1 end 4 )
+  (first-goal start 1 end 6 )
 )
 
-
-
 (goal-focus first-goal)
-
-
 
 (p init-agent
 	=goal>
