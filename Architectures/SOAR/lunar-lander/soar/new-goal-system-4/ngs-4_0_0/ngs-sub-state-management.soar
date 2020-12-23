@@ -1,0 +1,208 @@
+variable WM_ACTIVE_GOAL
+variable NGS_OP_DECIDE_GOAL
+variable NGS_OP_ID
+variable NGS_RETURN_VALUES
+variable NGS_DECISION_RET_VAL_NAME
+variable NGS_TAG_DECISION_STATUS
+variable NGS_YES
+variable NGS_NO
+variable NGS_TAG_OP_RETURN_VALUE
+variable NGS_TAG_SELECTION_STATUS
+variable NGS_TAG_ALREADY_ACTIVATED
+variable NGS_OP_COPY_RETURN_VALUES
+variable NGS_TAG_OP_RETURN_NEW_GOAL
+variable NGS_TAG_SUBSTATE_RESULT_RETURNED
+variable NGS_REPLACE_IF_EXISTS
+variable NGS_ADD_TO_SET
+
+# This is the traditional way names are given to substates
+sp "ngs*core*substate*set-name
+  (state <s> ^superstate { <> nil <superstate> })
+  (<superstate> ^operator.name <name>)
+-->
+  (<s> ^name <name> +)"
+
+# Adds the top-state elaboration to the sub-states
+sp "ngs*core*substate*set-top-state
+  (state <s> ^superstate { <> nil <superstate> })
+  (state <top-state> ^superstate nil)
+-->
+  (<s> ^top-state <top-state> +)"
+
+# Elaborate the operator's return values to the substate
+sp "ngs*core*substate*elaborate-return-values
+    [ngs-match-substate <ss> {} {} {} <superstate>]
+    (<superstate> ^operator.return-values <ret-values>)
+-->
+    (<ss> ^return-values <ret-values>)"
+
+# Elaborate the active goal in the sub-state
+sp "ngs*core*substate*set-active-goal
+  [ngs-match-substate <ss> {} {} {} <superstate>]
+  (<superstate> ^operator.goal <g>)
+-->
+  (<ss> ^$WM_ACTIVE_GOAL <g> +)" 
+
+# Provides local access to the operator's attributes in the
+#  substate.
+sp "ngs*core*substate*set-params
+  (state <s> ^superstate { <> nil <superstate> })
+  (<superstate> ^operator <o>)
+-->
+  (<s> ^params <o>)"
+
+# For decide goal sub-states, copy in the goals that represent the choices
+sp "ngs*core*substate*copy-decision-goals
+	[ngs-match-active-goal <s> <any-goal-type> <g> {} <g-params>]
+	(<g-params> ^decision-name <decision-name>)
+	[ngs-is-subgoal <g> <sub-goal>]
+    [ngs-is-assigned-decision <sub-goal> <decision-name>]
+-->
+	(<s> ^decision-choice <sub-goal>)"
+
+# Elaborates the return value structure for the decision. We don't know which object
+#  to tag yet because the selection hasn't been made yet.
+# 
+# JC: Fixed a subtle bug. This used to test the substate and set the return value
+#      that way.  However, that causes a justification to get created.  Right now
+#      the return value set is linked to the top state. We may need to change the
+#      return value set to get i-support (copy the return value set via individual productions)
+sp "ngs*core*substate*create-decision-return-structure
+    [ngs-match-proposed-function-operator <s> $NGS_OP_ID $NGS_OP_DECIDE_GOAL]
+	($NGS_OP_ID ^$NGS_RETURN_VALUES <ret-vals>)
+-->
+	[ngs-create-ret-tag-in-place $NGS_DECISION_RET_VAL_NAME <ret-vals> {} $NGS_TAG_DECISION_STATUS $NGS_YES]"
+
+##########
+# Copies the destination-object to the return value when returning a choice
+sp "ngs*core*substate*apply*set-return-value*fill-in-dest-object-for-choice
+  [ngs-match-selected-operator-in-substate <ss> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_OP_RETURN_VALUE]
+  (<o>           ^ret-val-name       $NGS_DECISION_RET_VAL_NAME
+  	             ^choice             <choice>)
+  (<ss>          ^$NGS_RETURN_VALUES <ret-val-set>)
+  (<ret-val-set> ^value-description  <v-desc>)
+  (<v-desc>      ^name              $NGS_DECISION_RET_VAL_NAME) 
+-->
+  (<v-desc> ^destination-object <choice> +)"
+
+
+# Clears the decided flag on all choices right before entering the decision state
+sp "ngs*core*substate*apply*$NGS_OP_DECIDE_GOAL*clear-all-decide-flags
+    [ngs-match-selected-operator <s> <o> $NGS_OP_DECIDE_GOAL <g>]
+	(<o> ^decision-name <decision-name>)
+	[ngs-is-subgoal <g> <sub-goal>]
+    [ngs-is-assigned-decision <sub-goal> <decision-name>]
+    [ngs-is-tagged <sub-goal> $NGS_TAG_SELECTION_STATUS <tag-val>]
+ -->
+ 	[ngs-untag <sub-goal> $NGS_TAG_DECISION_STATUS <tag-val>]
+ 	[ngs-untag <sub-goal> $NGS_TAG_ALREADY_ACTIVATED]"
+
+# Marks non-selected choices as NO after a choice is made
+sp "ngs*core*substate*apply*$NGS_OP_COPY_RETURN_VALUES*mark-no-choice
+	[ngs-match-selected-operator-in-substate <ss> <o> $NGS_OP_COPY_RETURN_VALUES]
+	(<ss>          ^decision-choice   { <choice> <> <dest> }
+		           ^return-values     <ret-val-set>)
+	(<ret-val-set> ^value-description <rv-obj>)
+	(<rv-obj>      ^name                 $NGS_DECISION_RET_VAL_NAME
+		           ^destination-object    <dest>)
+-->
+	[ngs-tag-goal-with-selection-status <choice> $NGS_NO]"
+
+
+##########
+## Augments operator to set a return value with the destination object (the ret-val-set)
+sp "ngs*core*ret-vals*elaborate-operator*set-return-value*fill-in-missing-values
+  [ngs-match-proposed-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_OP_RETURN_VALUE]
+  (<o>           ^ret-val-name       <ret-val-name>)
+  (<s>           ^$NGS_RETURN_VALUES <ret-val-set>)
+  (<ret-val-set> ^value-description  <v-desc>)
+  (<v-desc>      ^name             <ret-val-name>) 
+-->
+  (<o> ^dest-object <v-desc> +)
+  (<o> ^dest-attribute value +)"
+
+# Augments operator to create a goal as a return value
+sp "ngs*core*ret-vals*elaborate-operator*$NGS_TAG_OP_RETURN_NEW_GOAL*fill-in-return-val-set
+  (state <s> ^operator <o> +)
+  [ngs-is-tagged <o> $NGS_TAG_OP_RETURN_NEW_GOAL]
+  [ngs-match-goalpool <top-state> <goals> <goal-type>] 
+  (<s> ^$NGS_RETURN_VALUES <ret-val-set>)
+  (<o> ^new-obj            <new-ret-val>)
+  (<new-ret-val> ^value    <new-goal>)
+  [ngs-is-my-type <new-goal> <goal-type>]  
+-->
+  (<o>           ^dest-object        <ret-val-set> +)
+  (<new-ret-val> ^destination-object <goals>)"
+
+########## THIS IS GOOD AS IT IS ########
+# In every substate with a ret-values attribute, we propose a least
+#  preference operator to copy the return values to the top-state
+#
+sp "ngs*core*substate*propose*$NGS_OP_COPY_RETURN_VALUES
+	[ngs-match-substate <ss>]
+	(<ss> ^return-values <ret-val-set>)
+	[ngs-is-not-tagged <ss> $NGS_TAG_SUBSTATE_RESULT_RETURNED]
+-->
+	[ngs-create-atomic-operator <ss> $NGS_OP_COPY_RETURN_VALUES <o> <]"
+
+############ THIS HAS TO REMAIN A SHALLOW COPY ####################
+# Apply operator to return the return values to the locations specified in the
+#  return value set. There are three variations depending on whether the return
+#  value is a member of a set or whether there already exists a value for the
+#  return value attribute
+
+sp "ngs*core*substate*apply*$NGS_OP_COPY_RETURN_VALUES*single-copy*create-new
+	[ngs-match-selected-operator-in-substate <ss> <o> $NGS_OP_COPY_RETURN_VALUES]
+	(<ss> ^return-values <ret-val-set>)
+	(<ret-val-set> ^value-description     <rv-obj>)
+	(<rv-obj>      ^destination-object    <dest>
+	 			   ^destination-attribute <attr>
+	 			   ^value                 <ret-val>
+	 			   ^replacement-behavior  $NGS_REPLACE_IF_EXISTS)
+	(<dest>       -^<attr>)
+-->
+	(<dest>        ^<attr>         <ret-val> +)"
+
+sp "ngs*core*apply*$NGS_OP_COPY_RETURN_VALUES*single-copy*replace-existing
+	[ngs-match-selected-operator-in-substate <ss> <o> $NGS_OP_COPY_RETURN_VALUES]
+	(<ss> ^return-values <ret-val-set>)
+	(<ret-val-set> ^value-description     <rv-obj>)
+	(<rv-obj>      ^destination-object    <dest>
+	 			   ^destination-attribute <attr>
+	 			   ^value                 <ret-val>
+	 			   ^replacement-behavior  $NGS_REPLACE_IF_EXISTS)
+	(<dest>        ^<attr>         <old-val>)
+-->
+	(<dest>        ^<attr>         <old-val> -)
+	(<dest>        ^<attr>         <ret-val> +)"
+
+sp "ngs*core*apply*$NGS_OP_COPY_RETURN_VALUES*single-copy*remove-if-not-set
+   [ngs-match-selected-operator-in-substate <ss> <o> $NGS_OP_COPY_RETURN_VALUES]
+   (<ss> ^return-values <ret-val-set>)
+   (<ret-val-set> ^value-description      <rv-obj>)
+   (<rv-obj>      ^destination-object     <dest>
+                  ^destination-attribute  <attr>
+                 -^value
+                  ^remove-if-not-set      $NGS_YES)
+   (<dest>        ^<attr>         <old-val>)
+-->
+   (<dest>        ^<attr>         <old-val> -)"
+
+sp "ngs*core*apply*$NGS_OP_COPY_RETURN_VALUES*insert-into-set
+	[ngs-match-selected-operator-in-substate <ss> <o> $NGS_OP_COPY_RETURN_VALUES]
+	(<ss> ^return-values <ret-val-set>)
+	(<ret-val-set> ^value-description     <rv-obj>)
+	(<rv-obj>      ^destination-object    <dest>
+	 			   ^destination-attribute <attr>
+	 			   ^value                 <ret-val>
+	 			   ^replacement-behavior  $NGS_ADD_TO_SET)
+-->
+	(<dest>        ^<attr>         <ret-val> +)"
+
+# Fires in parallel (this copy process MUST be one elaboration wave)
+sp "ngs*core*apply*$NGS_OP_COPY_RETURN_VALUES*mark-copy-complete
+    [ngs-match-selected-operator-in-substate <ss> <o> $NGS_OP_COPY_RETURN_VALUES]
+-->
+    [ngs-tag <ss> $NGS_TAG_SUBSTATE_RESULT_RETURNED]"

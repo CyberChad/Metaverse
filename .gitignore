@@ -12,3 +12,5 @@ Architectures/__pycache__/
 venv/
 
 Architectures/SOAR/SoarLibs/__pycache__/
+
+.install.sh.swp

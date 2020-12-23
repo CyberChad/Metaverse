@@ -1,0 +1,119 @@
+
+#
+# Behaviour explanation
+#
+# Use this module to output information about the state of the agent to the output link.
+#
+# To enable explanation, call NGS_Explain_Initialize { agent_id }.
+# This will generate productions for all explainable information (goals, context-variables, etc.)
+# This macro must be called AFTER all goals, context-variables, etc. have been declared,
+#
+# Goals are not explained by default. To enable explanation for a goal, use NGS_Explain_ExplainGoal { goal_list }
+# To enable explanation for a context variable pool, use NGS_Explain_ExplainContext
+#
+# Example:
+#
+# NGS_Explain_Initialize "test-agent"
+# NGS_Explain_ExplainGoal "test-agent" MaintainAwareness DoGreatThing
+# NGS_Explain_ExplainGoal "test-agent" MaintainAwareness things-around-me
+#
+
+#
+# Match the explanation output structure.
+# This should only be called by behaviour explanation code and unit tests.
+#
+# state_id - A variable bound to the top state.
+# agent_id - The name of the agent to bind explanation for.
+# explanation_id - A variable that will be bound to the agent's explanation structure.
+#
+proc ngs-bind-agent-explanation { state_id agent_id explanation_id } {
+    variable NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+    variable NGS_EXPLAIN_AGENT_ID_ATTRIBUTE
+    variable NGS_EXPLAIN_TAG_SHOULD_EXPLAIN
+    set output_link_id [CORE_GenVarName "output-link"]
+
+    return "
+    [ngs-output-link $state_id $output_link_id]
+    [ngs-bind $output_link_id $NGS_EXPLAIN_EXPLANATION_ATTRIBUTE:${explanation_id}]
+    [ngs-eq $explanation_id $NGS_EXPLAIN_AGENT_ID_ATTRIBUTE $agent_id]
+    "
+}
+
+#
+# Match an explanation tag that was created using `ngs-create-explanation`
+#
+proc ngs-bind-explanation { root_id explanation_id { string_id "" } } {
+    variable NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+
+    set lhs "[ngs-bind $root_id @$NGS_EXPLAIN_EXPLANATION_ATTRIBUTE:$explanation_id]"
+    if { $string_id != "" } {
+        set lhs "$lhs [ngs-bind $explanation_id id:$string_id]"
+    }
+    return $lhs
+}
+
+#
+# Create an explanation structure as a tag on an object.
+# Other productions can bind this explanation using `ngs-bind-explanation`
+#
+proc ngs-create-explanation { root_id explanation_type explanation_id } {
+    variable NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+
+    return "
+    [ngs-create-typed-object $root_id @$NGS_EXPLAIN_EXPLANATION_ATTRIBUTE $explanation_type $explanation_id "
+        id {(concat $root_id)}
+    "]"
+}
+
+#
+# Initialize behaviour explanation.
+# This creates all the productions that populate the output link with explanation information.
+#
+# agent_id - A name that will be used to identify the agent's explanation.
+#
+proc NGS_Explain_Initialize { agent_id } {
+    variable NGS_ALL_GOAL_TYPES
+    variable NGS_CTX_ALL_VARIABLES
+    variable NGS_EXPLAIN_AGENT_ID_ATTRIBUTE
+    variable NGS_EXPLAIN_CONTEXT_VARIABLES_ATTRIBUTE
+    variable NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+    variable NGS_EXPLAIN_GOAL_HIERARCHY_ATTRIBUTE
+    variable NGS_EXPLAIN_INTERNAL_OPERATING_PICTURE_ATTRIBUTE
+    variable NGS_EXPLAIN_TAG_SHOULD_EXPLAIN
+    variable NGS_EXPLAIN_TASK_AWARENESS_ATTRIBUTE 
+
+
+    # Create the root explanation object
+    sp "ngs*explain*create-root-output*${agent_id}
+        [ngs-match-top-state <s>]
+        [ngs-output-link <s> <ol>]
+    -->
+        [ngs-create-typed-object-from-stor <ol> $NGS_EXPLAIN_EXPLANATION_ATTRIBUTE "
+            NGS_Explain_Explanation {
+                $NGS_EXPLAIN_AGENT_ID_ATTRIBUTE $agent_id
+                $NGS_EXPLAIN_CONTEXT_VARIABLES_ATTRIBUTE { NGS_Explain_ContextVariables {
+                    variables { Set {} }
+                    pools { Set {} }
+                } }
+                $NGS_EXPLAIN_GOAL_HIERARCHY_ATTRIBUTE { NGS_Explain_GoalHierarchy {
+                    roots { Set {} }
+                    goals { Set {} }
+                } }
+                $NGS_EXPLAIN_TASK_AWARENESS_ATTRIBUTE { NGS_Explain_TaskAwareness {} }
+                $NGS_EXPLAIN_INTERNAL_OPERATING_PICTURE_ATTRIBUTE { NGS_Explain_InternalOperatingPicture {} }
+            }
+        "]
+    "
+
+    # Create productions for all explainable types
+    foreach goal_type $NGS_ALL_GOAL_TYPES {
+        NGS_Explain_CreateProductionsForGoal $agent_id $goal_type
+    }
+    
+    foreach context_variable $NGS_CTX_ALL_VARIABLES {
+        set pool     [dict get $context_variable pool]
+        set category [dict get $context_variable category]
+        set name     [dict get $context_variable name]
+        NGS_Explain_CreateProductionsForVariable $agent_id $pool $category $name
+    }
+}

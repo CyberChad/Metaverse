@@ -1,0 +1,26 @@
+variable NGS_TAG_OP_REMOVE_ATTRIBUTE
+variable NGS_TAG_OP_REMOVE_GOAL
+
+# Apply operator to mark goal achieved
+sp "ngs*core*goal*apply*remove-attribute
+  (state <s> ^operator <o>)
+  [ngs-is-tagged <o> $NGS_TAG_OP_REMOVE_ATTRIBUTE]
+  (<o> ^dest-object     <dest>
+       ^dest-attribute  <attr>
+       ^value-to-remove <val>)
+-->
+  (<dest> ^<attr> <val> -)"
+
+# For goal removal, we need to elaborate the goal pool
+#  onto the operator (as the dest-object) 
+#  before the operator can be applied
+sp "ngs*core*goal*elaborate-operator*remove-attribute*goal-pool
+	[ngs-match-goalpool <s> <goal-pool> <goal-type>]
+    (<s> ^operator <o> +)
+    [ngs-is-tagged <o> $NGS_TAG_OP_REMOVE_GOAL]
+    (<o> ^value-to-remove <g>)
+    [ngs-is-my-type <g> <goal-type>]
+    (<goal-pool> ^goal <g>)
+-->
+	(<o> ^dest-object <goal-pool>)"
+  	

@@ -1,0 +1,29 @@
+source "../_core/_CORE_Macros.tcl"
+source "../_core/_CORE_MacroVariables.tcl"
+source "../_core/_CORE_Math.tcl"
+
+source "../load.soar"
+CORE_Source helpers.tcl
+
+watch 1
+
+#srand 1
+
+
+# fail faster than the default (which is 50000 dcs)
+FailAfterNDecisionCycles 500
+
+##########################################
+# Basic input link stuff
+
+sp "unit-test*create-system-attribute
+    (state <s> ^$WM_INPUT_LINK <il>)
+-->
+    [ngs-create-typed-object <il> system SystemInformation <sys>]"
+
+sp "unit-test*elaborate-unit-test-cycle-count
+    (state <s> ^$WM_INPUT_LINK <il>)
+    (<il>      ^soar-unit.cycle-count <cc>
+               ^system <sys>)
+-->
+    (<sys>     ^cycle-count <cc>)"

@@ -1,0 +1,341 @@
+##!
+# @file
+#
+# @created jacobcrossman 20170317
+
+#################
+
+# Creates an explanation data structure defining an internal operating picture element
+# 
+# The Internal Operating Picture (IOP) is the model's internal representation of the spatial objects in the world
+# Because the IOP is very domain specific, the explanation support code has to be very general (and thus, 
+#  provides less help to the programmer).
+#
+# This macro creates a structure that will be tagged to the source_id object. This structure will store meta-information
+#  about the IOP item (like its type and name)
+#
+# Call NGS_Explain_CreateProductionsForIOPElement to create the productions that  actually manage the output of the
+#  explanation data.
+#
+# source_id - Identifier to the object that will maintain the explanation data. The explanation data will be tagged onto this object
+# my_type - The type of explanation objecct. It should be one of the IOPSpatialObject objects in types.tcl or a type derived from this.
+# unique_name - A unique name for this explanation item. This will show up in a display for the user.
+# explanation_id - (Optional) If provided, this will be bound to the identifier for the explanation structure. Use this if you need
+#                  to add arbitrary other information to the explanation structure.
+# attributes - (Optional) If provided, a list of { name value } pairs in a list that will be inserted into the new explanation structure.
+#                  This is typically used to set the attributes for the specific type of IOPSpatialObject being created.
+#
+proc ngs-create-iop-explanation-element { source_id my_type unique_name { explanation_id "" } { attributes "" } } {
+
+    variable NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+    
+    CORE_GenVarIfEmpty explanation_id "explanation-object"
+    set explanation_tag "$NGS_EXPLAIN_EXPLANATION_ATTRIBUTE*$unique_name"
+    return [ngs-create-typed-object $source_id @$explanation_tag $my_type \
+                                    $explanation_id "name $unique_name $attributes"]
+
+}
+
+
+# Bind the explanation data structure for an object.
+#
+# source_id - Identifier to the object that maintains the explanation data.
+# unique_name - The unique name for this explanation item.
+# explanation_id - A variable that will be bound to the identifier for the explanation structure.
+proc ngs-bind-iop-explanation-element { source_id unique_name explanation_id } {
+
+    variable NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+
+    set explanation_tag "$NGS_EXPLAIN_EXPLANATION_ATTRIBUTE*$unique_name"
+    return [ngs-is-tagged $source_id $explanation_tag $explanation_id]
+}
+
+
+# Bind the internal operating picture explanation
+#
+# state_id - A variable bound to the state object
+# agent_id - A string unique to this agent. This is used by the explanation UI to differentiate between explanation data
+# iop_id - A variable that will be bound to the IOP explanation.
+proc ngs-bind-explanation-iop { state_id agent_id iop_id } {
+
+    set explanation_id [CORE_GenVarName "explanation"]
+
+    return "[ngs-bind-agent-explanation $state_id $agent_id $explanation_id]
+            [ngs-bind $explanation_id internal-operating-picture:$iop_id]"
+}
+
+
+# Construct productions that maintain IOP explanation structure
+# 
+# There are two types of productions that are necessary:
+# 1. Productions to fill the explanation data with updated values when the spatial data changes
+# 2. Productions to synchronize the explanation output process with the explanation data tag.
+#
+# To make this process relatively painless, this macro lets you specify multiple values to insert into 
+#  the explanation structure in just one call. For example,
+#
+# NGS_Explain_CreateProductionsForIOPElement my-agent-1 me my-agent.me.my-cur-state { 
+#    { pose.location    location    }
+#    { pose.orientation orientation } 
+#    { velocity         velocity    } 
+# } 
+#
+# The first line is just bookkeeping information (see the parameter descriptions). The list describes
+#  mappings from the model's natural data storage (left) to the explanation object's attribute (right)
+#  So, for example, the explanation object needs a location field. In this example, it would get that
+#  location from pose.location stored at my-agent.me.my-cur-state (full path: my-agent.me.my-cur-state.pose.location).
+#
+# agent_id - A string unique to this agent. This is used by the explanation UI to differentiate between explanation data
+#             it is recieving from multiple agents (it is also used to allow a single Soar model to execute multiple agents).
+# unique_name - A string with a unique name for the explanation data. This should match the unique_name provided in the
+#               call to ngs-create-iop-explanation-element.
+# path_to_object - Path to the object containing the explanation tag created in ngs-create-iop-explanation-element
+# values_to_update - A list of lists where each sub-list is a { source destination } pair as shown in the example above.
+#                  The source is a path to a variable, where the path is rooted at path_to_object.  I.e. 
+#                  $path_to_object.$source should be a valid reference to the source value. Destination is the name
+#                  of the IOPSpatialObject attribute that should be set to match the source. 
+# children - (Optional) If provided, then the IOP elements of these objects will be elaborated as children of this one.
+#          This argument is a { path name } pair where `path` is the path to the parent
+#          IOP object, and `name` is the unique name of that object's IOP explanation.
+#
+proc NGS_Explain_CreateProductionsForIOPElement { agent_id unique_name path_to_object values_to_update { children "" } } {
+
+    variable NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+
+    set explanation_tag "$NGS_EXPLAIN_EXPLANATION_ATTRIBUTE*$unique_name"
+    set production_suffix "[string map { "." "*" } $path_to_object]*$unique_name"
+
+    # Iterate over each given value and create production that updates the explanation
+    #  data each time that object is updated
+    foreach value_to_update $values_to_update {
+
+        set value            [lindex $value_to_update 0]
+        set explanation_attr [lindex $value_to_update 1]
+
+        if { $value != "" } {
+            set val_soar_var [CORE_GenVarName "value"]
+
+            # If the value is an ID that has an explanation then use its explanation...
+            sp "ngs*explain*iop*update-value*$production_suffix*$explanation_attr*with-explanation
+                [ngs-match-top-state <s> $path_to_object:<object-to-explain>]
+                [ngs-is-tagged <object-to-explain> $explanation_tag <explanation>]
+                [ngs-bind <object-to-explain> $value:$val_soar_var]
+                [ngs-bind-iop-explanation-element $val_soar_var $value <value-explanation>]
+            -->
+                [ngs-create-attribute <explanation> $explanation_attr <value-explanation>]
+                [ngs-tag <value-explanation> is-a-child]"
+
+            # ... otherwise, use the value itself.
+            sp "ngs*explain*iop*update-value*$production_suffix*$explanation_attr*without-explanation
+                [ngs-match-top-state <s> $path_to_object:<object-to-explain>]
+                [ngs-is-tagged <object-to-explain> $explanation_tag <explanation>]
+                [ngs-bind <object-to-explain> $value:$val_soar_var]
+                [ngs-not [ngs-bind-iop-explanation-element $val_soar_var $value <value-explanation>]]
+            -->
+                [ngs-create-attribute <explanation> $explanation_attr $val_soar_var]"
+        } else {
+            sp "ngs*explain*iop*update-value*$production_suffix*$explanation_attr
+                [ngs-match-top-state <s> $path_to_object:<object-to-explain>]
+                [ngs-is-tagged <object-to-explain> $explanation_tag <explanation>]
+            -->
+                [ngs-create-attribute <explanation> $explanation_attr <object-to-explain>]"
+        }
+
+    }
+
+    # Place the explanation object on the output link
+    # (but only if it isn't a child of another explanation)
+    sp "ngs*explain*iop*link-to-output*$production_suffix
+        [ngs-match-top-state <s> $path_to_object:<object-to-explain>]
+        [ngs-is-tagged <object-to-explain> $explanation_tag <explanation>]
+        [ngs-bind-agent-explanation <s> $agent_id <explanation-output>]
+        [ngs-is-not-tagged <explanation> is-a-child]
+        [ngs-bind <explanation-output> internal-operating-picture]
+    -->
+        [ngs-create-attribute <internal-operating-picture> element <explanation>]"
+
+    if { $children != "" } {
+        # Creates a Set on the parent object
+        sp "ngs*explain*iop*create-set-for-children*$production_suffix
+            [ngs-match-top-state <s> $path_to_object:<object-to-explain>]
+            [ngs-bind-iop-explanation-element <object-to-explain> $unique_name <explanation>]
+        -->
+            [ngs-create-typed-object <explanation> children Set <children>]"
+    }
+
+    # Explain children
+    foreach child $children {
+        set path_to_child [lindex $child 0]
+        set child_name [lindex $child 1]
+
+        # Elaborate child explanation onto parent
+        # and tag the child so it does not get elaborated onto the root.
+        sp "ngs*explain*iop*update-child*$production_suffix*$child_name
+            [ngs-match-top-state <s> $path_to_object:<object-to-explain>]
+            [ngs-is-tagged <object-to-explain> $explanation_tag <explanation>]
+            [ngs-bind <explanation> children]
+            [ngs-bind <s> $path_to_child:<child>]
+            [ngs-bind-iop-explanation-element <child> $child_name <child-explanation>]
+        -->
+            [ngs-create-attribute <children> child <child-explanation>]
+            [ngs-tag <child-explanation> is-a-child]"
+    }
+}
+
+
+
+# For internal use by NGS_DefineIOPType
+set NGS_Explain_IOPTypes [dict create]
+
+# Use this to define how to create an IOP explanation for a particular type.
+# To instantiate productions for an instance of a type, use NGS_ExplainObject
+#
+# Example:
+#
+# NGS_DefineIOPType Vehicle {
+#     { position location Location }
+#     { velocity velocity Velocity }
+# }
+# NGS_DefineIOPType Location {
+#     { easting-m x }
+#     { northing-m y }
+#     { altitude-m z }
+# }
+# NGS_DefineIOPType Velocity {
+#     { speed-mps speed }
+#     { heading-deg heading }
+# }
+# NGS_ExplainObject agent Vehicle self.vehicle
+#
+#
+# type - The type of the object being explained
+# values - A list of 2- or 3-tuples that describes how to map fields into the explanation.
+#          Each element should have the following form:
+#          { path attribute { type "" } }
+#          path - The relative path to a value to elaborate, starting from the object being explained.
+#          attribute - The attribute to use for this value in the explanation.
+#          type - (Optional) If provided, then this value is treated as a non-primitive.
+#                 Instead of using its value directly, its explanation will be used.
+# children - (Optional) A list of children to attach to the explanation object.
+#            Elements of this list are of the following form:
+#            { path type }
+#            path - The relative path to the child, starting at the object being explained
+#            type - The type of the child being explained. T
+proc NGS_DefineIOPType { type values { children "" } } {
+    variable NGS_Explain_IOPTypes
+
+    # Perhaps it would be better to explicitly declare these types
+    NGS_DeclareType "IOP_$type" {}
+
+    set details [dict create \
+        explanation-type "IOP_$type" \
+        values $values \
+        children $children]
+
+    dict set NGS_Explain_IOPTypes $type $details
+}
+
+# Use this to instantiate the productions that will create an IOP explanation for an object.
+#
+# agent_id - A unique id that identifies this agent's explanation
+# type - The type of the object being explained.
+#        You must first describe how to explain this type using NGS_DefineIOPType.
+# path_to_object - The path, starting at the top state, to the object being explained.
+# name - (Optional) If provided, then this value is elaborated onto the explanation with attribute ^name
+# should_output - (Internal use) Controls whether the explanation is linked to the agent's explanation output.
+#                 This is used internally to prevent children from being linked to the root of the output.
+proc NGS_ExplainObject { agent_id type path_to_object { name "" } { should_output 1 } } {
+
+    variable NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+    variable NGS_Explain_IOPTypes
+
+    set production_prefix "ngs*explain*iop*$type*[string map { "." "*" "!" "*" } $path_to_object]"
+    set object_var [CORE_GenVarName "object"]
+    set children_var [CORE_GenVarName "children"]
+    set explanation_var [CORE_GenVarName "explanation"]
+    set explanation_attribute $NGS_EXPLAIN_EXPLANATION_ATTRIBUTE
+
+    set iop_data [dict get $NGS_Explain_IOPTypes $type]
+    set explanation_type [dict get $iop_data explanation-type]
+    set values           [dict get $iop_data values]
+    set children         [dict get $iop_data children]
+
+    # Create empty explanation
+    sp "$production_prefix*create-explanation
+        [ngs-match-top-state <s> $path_to_object:$object_var]
+    -->
+        [ngs-create-typed-object $object_var @$explanation_attribute $explanation_type $explanation_var]
+        [ngs-tag $explanation_var created-by $production_prefix]"
+
+    if { $name != "" } {
+        sp "$production_prefix*create-name
+            [ngs-match-top-state <s> $path_to_object:$object_var.@$explanation_attribute:$explanation_var]
+            [ngs-is-tagged $explanation_var created-by $production_prefix]
+        -->
+            [ngs-create-attribute $explanation_var name $name]"
+    }
+
+    # Elaborate each value
+    foreach value $values {
+        set value_path      [lindex $value 0]
+        set value_attribute [lindex $value 1]
+        set value_type      [lindex $value 2]
+
+        set value_explanation_var [CORE_GenVarName "explanation"]
+
+        if { $value_type != "" } {
+            # If the value is an explainable object, then create productions to explain it.
+            NGS_ExplainObject $agent_id $value_type $path_to_object.$value_path $name 0
+            set bind_value [ngs-bind $object_var $value_path.@$explanation_attribute:$value_explanation_var.name:$name]
+        } else {
+            set bind_value [ngs-bind $object_var $value_path:$value_explanation_var]
+        }
+
+        sp "$production_prefix*elaborate*[string map {"." "*" } $value_path]*$value_attribute
+            [ngs-match-top-state <s> $path_to_object:$object_var.@$explanation_attribute:$explanation_var]
+            [ngs-is-tagged $explanation_var created-by $production_prefix]
+            $bind_value
+        -->
+            [ngs-create-attribute $explanation_var $value_attribute $value_explanation_var]"
+    }
+
+
+    # If this object has children, then create a set for them
+    if { $children != "" } {
+        sp "$production_prefix*create-children-set
+            [ngs-match-top-state <s> $path_to_object:$object_var.@$NGS_EXPLAIN_EXPLANATION_ATTRIBUTE:$explanation_var]
+            [ngs-is-tagged $explanation_var created-by $production_prefix]
+        -->
+            [ngs-create-typed-object $explanation_var children Set $children_var]"
+    }
+
+    set child_explanation_var [CORE_GenVarName "explanation"]
+    set children_var [CORE_GenVarName "children"]
+
+    # Elaborate each child explanation
+    foreach child $children {
+        set path_to_child   [lindex $child 0]
+        set child_type [lindex $child 1]
+
+        # All child objects must themselves be explainable
+        NGS_ExplainObject $agent_id $child_type $path_to_object.$path_to_child $name 0
+
+        sp "$production_prefix*elaborate-child*[string map { "." "*" "!" "*"} $path_to_child]
+            [ngs-match-top-state <s> $path_to_object:$object_var.@$explanation_attribute:$explanation_var.children:$children_var]
+            [ngs-is-tagged $explanation_var created-by $production_prefix]
+            [ngs-bind $object_var $path_to_child.@$explanation_attribute:$child_explanation_var.name:$name]
+        -->
+            [ngs-create-attribute $children_var child $child_explanation_var]"
+    }
+
+    # User calls to this function implicitly set this to 1, but recursive calls set it to 0
+    if { $should_output } {
+        # Place the explanation object on the output link
+        sp "$production_prefix*link-to-output
+            [ngs-match-top-state <s> $path_to_object:$object_var.@$explanation_attribute:$explanation_var]
+            [ngs-bind-agent-explanation <s> $agent_id <explanation-output>]
+            [ngs-bind <explanation-output> internal-operating-picture]
+        -->
+            [ngs-create-attribute <internal-operating-picture> element $explanation_var]"
+    }
+}

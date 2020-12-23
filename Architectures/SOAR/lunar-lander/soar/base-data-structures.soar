@@ -1,0 +1,86 @@
+sp "lunar-lander*create-base-structure
+    [ngs-match-top-state <s>]
+-->
+    [ngs-create-typed-object <s> lunar-lander LunarLander <lunar-lander>]
+    [ngs-create-typed-object <lunar-lander> position Position <new-position>]
+    [ngs-create-typed-object <lunar-lander> velocity Velocity <new-velocity>]"
+
+sp "lunar-lander*direction-multiplier
+    [ngs-match-top-state <s> lunar-lander <il>]
+    [ngs-bind <il> gym.x-position]
+-->
+    [ngs-tag <lunar-lander> direction-multiplier {(/ <x-position> (abs <x-position>))}]"
+
+sp "lunar-lander*copy-gym-data
+    [ngs-match-top-state <s> lunar-lander <il>]
+    [ngs-bind <lunar-lander> position velocity @direction-multiplier]
+    [ngs-bind <il> gym]
+    [ngs-bind <gym> x-position y-position \
+                   x-velocity y-velocity \
+                   orientation-angle orientation-angular-velocity \
+                   left-pad-contact right-pad-contact]
+-->
+    [ngs-create-attribute <position> x {(* <direction-multiplier> <x-position>)}]
+    [ngs-create-attribute <position> y <y-position>]
+    [ngs-create-attribute <position> theta {(* <direction-multiplier> <orientation-angle>)}]
+    [ngs-create-attribute <velocity> x {(* <direction-multiplier> <x-velocity>)}]
+    [ngs-create-attribute <velocity> y <y-velocity>]
+    [ngs-create-attribute <velocity> theta {(* <direction-multiplier> <orientation-angular-velocity>)}]
+    [ngs-tag <lunar-lander> left-pad-contact <left-pad-contact>]
+    [ngs-tag <lunar-lander> right-pad-contact <right-pad-contact>]
+    "
+
+sp "lunar-lander*pos-and-vel*magnitudes
+    [ngs-match-top-state <s> lunar-lander.<any>!Pose:<pos-or-vel>]
+    [ngs-bind <pos-or-vel> x y theta]
+-->
+    [ngs-create-attribute <pos-or-vel> x-mag (abs <x>)]
+    [ngs-create-attribute <pos-or-vel> y-mag (abs <y>)]
+    [ngs-create-attribute <pos-or-vel> theta-mag (abs <theta>)]"
+
+ngs-declare-tsp lunar-lander*descriptive-directions "
+    [ngs-match-top-state <s> lunar-lander]
+    [ngs-bind <lunar-lander> <pos-or-vel>:<pose>.%variable:%inequality:0]
+-->
+    [ngs-tag <pose> %tag-name %tag-val]"
+
+ngs-expand-tsp lunar-lander*descriptive-directions {
+    { %variable x %inequality >= %tag-name x-positive %tag-val $NGS_YES }
+    { %variable x %inequality <  %tag-name x-positive %tag-val $NGS_NO }
+    { %variable y %inequality >= %tag-name y-positive %tag-val $NGS_YES }
+    { %variable y %inequality <  %tag-name y-positive %tag-val $NGS_NO }
+    { %variable theta %inequality >= %tag-name turn-positive %tag-val $NGS_YES }
+    { %variable theta %inequality <  %tag-name turn-positive %tag-val $NGS_NO }
+}
+
+
+# Apply the movement
+
+sp {apply*move*create-output-command
+    (state <s> ^operator <o>)
+    (<o> ^name move
+         ^dir <dir>)
+-->
+    (<s> ^output-cmd <output-cmd>)
+    (<output-cmd> ^direction <dir>)
+    }
+
+# Remove the old commands after they are complete
+sp {propose*remove*old-output-command
+    (state <s> ^name left-right
+               ^output-cmd <cmd>)
+    (<cmd> ^status complete)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name remove-output-cmd)
+    (<o> ^cmd <cmd>)
+    }
+
+sp {apply*remove*old-output-command
+    (state <s> ^operator <o>)
+    (<o> ^name remove-output-cmd
+         ^cmd <cmd>)
+-->
+    (<s> ^output-cmd <cmd> -)
+    }
+

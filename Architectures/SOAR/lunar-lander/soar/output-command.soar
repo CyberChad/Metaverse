@@ -1,0 +1,11 @@
+##!
+# @file
+#
+# @created timothysaucer 20190504
+
+sp "lunar-lander*output-command
+    [ngs-match-goal <s> AchieveSafeLanding <g>]
+    [ngs-output-link <s> <ol>]
+    [ngs-bind <g> appropriate-tactic.thrusters]
+-->
+    [ngs-create-output-command-by-operator <s> <ol> ManeuverCommand <cmd> "thrusters <thrusters>"]"

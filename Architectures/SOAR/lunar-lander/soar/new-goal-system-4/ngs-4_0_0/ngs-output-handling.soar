@@ -1,0 +1,40 @@
+variable NGS_OUTPUT_COMMAND_ATTRIBUTE
+variable NGS_TAG_STATUS_COMPLETE
+variable NGS_TAG_ERROR
+variable NGS_TAG_ERROR_STRING
+
+# Propose operator to remove an output link command after being tagged as completed
+# This operator is given best preference so it happens right away
+sp "ngs*output-link*propose*remove-completed-command
+	[ngs-match-top-state <s> {} {} <ol>]
+	[ngs-bind <ol> $NGS_OUTPUT_COMMAND_ATTRIBUTE:<command>]
+	[ngs-is-my-type <command> <my-type>]
+	[ngs-is-tagged <command> $NGS_TAG_STATUS_COMPLETE]
+-->
+	[ngs-remove-attribute-by-operator <s> <ol> $NGS_OUTPUT_COMMAND_ATTRIBUTE <command> "> ="]
+	[core-trace NGS_TRACE_OUTPUT "O OUTPUT-COMMAND-EXECUTED, (| <my-type> |, | <ol> |.$NGS_OUTPUT_COMMAND_ATTRIBUTE | <command> |)."]"
+
+# The old version of marking status complete. This makes NGS 4.0 backward compatable with
+#  older ways of handling output messages 
+sp "ngs*output-link*propose*remove-completed-command*deprecated
+	[ngs-match-top-state <s> {} {} <ol>]
+	[ngs-bind <ol> <any-command-attr>:<command>]
+	[ngs-is-my-type <command> <my-type>]
+	[ngs-eq <command> status complete]
+-->
+	[ngs-tag <command> $NGS_TAG_STATUS_COMPLETE]
+	[core-trace NGS_TRACE_OUTPUT "O OUTPUT-COMMAND-EXECUTED-DEPRECATED, (| <my-type> |, | <ol> |.| <any-command-attr> | | <command> |)."]"
+
+# Print out to console any error messages
+sp "ngs*output-link*print-output-error
+	[ngs-match-top-state <s> {} {} <ol>]
+	[ngs-bind <ol> $NGS_OUTPUT_COMMAND_ATTRIBUTE:<command>]
+	[ngs-is-my-type <command> <my-type>]
+	[ngs-is-tagged <command> $NGS_TAG_ERROR <err>]
+	[ngs-is-tagged <command> $NGS_TAG_ERROR_STRING <err-string>]
+-->
+	[core-trace NGS_TRACE_ERRORS "!------------------------------------------------------------------!"]
+	[core-trace NGS_TRACE_ERRORS "! ERROR, (| <my-type> |: | <ol> |.$NGS_OUTPUT_COMMAND_ATTRIBUTE | <command> |)."]
+	[core-trace NGS_TRACE_ERRORS "! Error(| <err> |): | <err-string> |."]
+	[core-trace NGS_TRACE_ERRORS "!------------------------------------------------------------------!"]"
+	

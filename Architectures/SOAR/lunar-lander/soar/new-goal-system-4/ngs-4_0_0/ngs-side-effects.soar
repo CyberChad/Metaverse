@@ -1,0 +1,182 @@
+variable NGS_TAG_INTELLIGENT_CONSTRUCTION
+variable NGS_SIDE_EFFECT_ADD
+variable NGS_REPLACE_IF_EXISTS
+variable NGS_ADD_TO_SET
+variable NGS_SIDE_EFFECT_REMOVE
+variable NGS_TAG_OP_DEEP_COPY
+variable NGS_TAG_OP_REMOVE_ATTRIBUTE
+variable NGS_SIDE_EFFECT_WRITE
+variable NGS_SIDE_EFFECT_LOG
+variable SOAR_IMPLEMENTATION
+variable JSOAR
+variable NGS_OP_BATCH
+
+# Execute side-effects on selected operators
+#
+# Note these productions are carefully constructed to fire only in the last wave
+#  of operator applications so that side effects don't un-intentionally retract 
+#  the operator early
+
+################## SHALLOW copy operators 
+
+# For shallow copies, copy-depth will be 0
+sp "ngs*core*apply*side-effects*intelligent-construction*level-0*shallow*not-exist-so-create
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_INTELLIGENT_CONSTRUCTION]
+  [ngs-eq <o> copy-depth 0]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_REPLACE_IF_EXISTS]
+  [ngs-nex <destination-object> <destination-attribute>]
+-->
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*level-0*shallow*exist-so-replace
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_INTELLIGENT_CONSTRUCTION]
+  [ngs-eq <o> copy-depth 0]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_REPLACE_IF_EXISTS]
+  [ngs-bind <destination-object> <destination-attribute>:<old-val>]
+-->
+  (<destination-object> ^<destination-attribute> <old-val> -)
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*level-0*shallow*add-to-set
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_INTELLIGENT_CONSTRUCTION]
+  [ngs-eq <o> copy-depth 0]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_ADD_TO_SET]
+-->
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*level-0*shallow*exist-so-remove
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_INTELLIGENT_CONSTRUCTION]
+  [ngs-eq <o> copy-depth 0]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_REMOVE]
+  [ngs-bind <destination-object> <destination-attribute>:<value>]
+-->
+  (<destination-object> ^<destination-attribute> <value> -)"
+
+################## INTELLIGENT COPY DEEP 
+
+sp "ngs*core*apply*side-effects*intelligent-construction*level-0*deep*not-exist-so-create
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_INTELLIGENT_CONSTRUCTION]
+  [ngs-is-attr-constructed <s> <o> <new-obj>]
+  [ngs-gt <o> copy-depth 0]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_REPLACE_IF_EXISTS]
+  [ngs-nex <destination-object> <destination-attribute>]
+-->
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*level-0*deep*exist-so-replace
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_INTELLIGENT_CONSTRUCTION]
+  [ngs-is-attr-constructed <s> <o> <new-obj>]
+  [ngs-gt <o> copy-depth 0]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_REPLACE_IF_EXISTS]
+  [ngs-bind <destination-object> <destination-attribute>:<old-val>]
+-->
+  (<destination-object> ^<destination-attribute> <old-val> -)
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*level-0*deep*add-to-set
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_INTELLIGENT_CONSTRUCTION]
+  [ngs-is-attr-constructed <s> <o> <new-obj>]
+  [ngs-gt <o> copy-depth 0]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_ADD_TO_SET]
+-->
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*level-0*deep*exist-so-remove
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-is-tagged <o> $NGS_TAG_INTELLIGENT_CONSTRUCTION]
+  [ngs-is-attr-constructed <s> <o> <new-obj>]
+  [ngs-gt <o> copy-depth 0]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_REMOVE]
+  [ngs-bind <destination-object> <destination-attribute>:<value>]
+-->
+  (<destination-object> ^<destination-attribute> <value> -)"
+
+################## SOAR DEEP COPY and ATTRIBUTE REMOVAL and BATCH OPERATORS
+sp "ngs*core*apply*side-effects*intelligent-construction*removal-or-deep-copy*not-exist-so-create
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-or [ngs-is-tagged <o> $NGS_TAG_OP_DEEP_COPY] [ngs-is-tagged <o> $NGS_TAG_OP_REMOVE_ATTRIBUTE] [ngs-is-type <o> $NGS_OP_BATCH]]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_REPLACE_IF_EXISTS]
+  [ngs-nex <destination-object> <destination-attribute>]
+-->
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*removal-or-deep-copy*exist-so-replace
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-or [ngs-is-tagged <o> $NGS_TAG_OP_DEEP_COPY] [ngs-is-tagged <o> $NGS_TAG_OP_REMOVE_ATTRIBUTE] [ngs-is-type <o> $NGS_OP_BATCH]]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_REPLACE_IF_EXISTS]
+  [ngs-bind <destination-object> <destination-attribute>:<old-val>]
+-->
+  (<destination-object> ^<destination-attribute> <old-val> -)
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*removal-or-deep-copy*add-to-set
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-or [ngs-is-tagged <o> $NGS_TAG_OP_DEEP_COPY] [ngs-is-tagged <o> $NGS_TAG_OP_REMOVE_ATTRIBUTE] [ngs-is-type <o> $NGS_OP_BATCH]]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_ADD replacement-behavior:$NGS_ADD_TO_SET]
+-->
+  (<destination-object> ^<destination-attribute> <value> +)"
+
+sp "ngs*core*apply*side-effects*intelligent-construction*removal-or-deep-copy*exist-so-remove
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-or [ngs-is-tagged <o> $NGS_TAG_OP_DEEP_COPY] [ngs-is-tagged <o> $NGS_TAG_OP_REMOVE_ATTRIBUTE] [ngs-is-type <o> $NGS_OP_BATCH]]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> destination-object destination-attribute value action:$NGS_SIDE_EFFECT_REMOVE]
+  [ngs-bind <destination-object> <destination-attribute>:<value>]
+-->
+  (<destination-object> ^<destination-attribute> <value> -)"
+
+
+################## WRITE / LOG
+
+sp "ngs*core*apply*side-effects*write
+  [ngs-match-selected-operator <s> <o>]
+  [ngs-has-side-effect <o> <se>]
+  [ngs-bind <se> action:$NGS_SIDE_EFFECT_WRITE text]
+-->
+  (write (crlf) <text>)"
+
+if { $SOAR_IMPLEMENTATION eq $JSOAR } {
+    # for jsoar, use the built-in log command
+    sp "ngs*core*apply*side-effects*log
+      [ngs-match-selected-operator <s> <o>]
+      [ngs-has-side-effect <o> <se>]
+      [ngs-bind <se> action:$NGS_SIDE_EFFECT_LOG text level]
+      [ngs-neq <se> logger-name || <logger-name>]
+    -->
+      (log <logger-name> <level> <text>)"
+
+    # if there's no logger name, let the log command use its default
+    sp "ngs*core*apply*side-effects*log*no-logger-name
+      [ngs-match-selected-operator <s> <o>]
+      [ngs-has-side-effect <o> <se>]
+      [ngs-bind <se> action:$NGS_SIDE_EFFECT_LOG text logger-name:|| level]
+    -->
+      (log <level> <text>)"
+
+} else {
+    # for csoar, construct something that looks like jsoar's log command
+    sp "ngs*core*apply*side-effects*log
+      [ngs-match-selected-operator <s> <o>]
+      [ngs-has-side-effect <o> <se>]
+      [ngs-bind <se> action:$NGS_SIDE_EFFECT_LOG text logger-name level level-name]
+    -->
+      (log <level> (crlf) |\[<level-name> |(timestamp)|\]|<logger-name>|: |<text>)"
+}

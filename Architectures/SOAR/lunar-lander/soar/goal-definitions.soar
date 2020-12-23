@@ -1,0 +1,24 @@
+##!
+# @file
+#
+# @created timothysaucer 20190502
+
+NGS_DeclareGoal AchieveSafeLanding {
+}
+
+
+NGS_DeclareGoal AchieveManeuverOutput {
+    thrusters ""
+}
+
+NGS_DeclareGoal AchieveBrakeHard {
+    type AchieveManeuverOutput
+}
+
+NGS_DeclareGoal AchieveFreeFall {
+    type AchieveManeuverOutput
+}
+
+NGS_DeclareGoal AchieveRotate {
+    type AchieveManeuverOutput
+}
