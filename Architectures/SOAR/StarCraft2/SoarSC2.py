@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import cmuactr as actr
+#import cmuactr as actr
 import math
 import numbers
 from os import environ as env
@@ -16,7 +16,7 @@ import numpy as np
 
 __description__ = 'Run a scripted example using the SC2MoveToBeacon-v0 environment.'
 
-
+import Python_sml_ClientInterface as sml
 
 import copy
 import time
@@ -27,16 +27,7 @@ from pysc2.lib import actions, features, units
 from absl import app
 import random
 
-#import scripted_actr_agent as scripted
-
-import logging
-import sys
-import numpy
-
 from absl import flags
-
-from pysc2.agents import base_agent
-from pysc2.lib import actions
 
 #game setup
 FLAGS = flags.FLAGS #for passing arguments
@@ -54,7 +45,7 @@ from pysc2.env import run_loop
 from pysc2.env import sc2_env
 
 import sc2gym
-from examples.base_example import BaseExample
+#from examples.base_example import BaseExample
 
 
 _PLAYER_SELF = features.PlayerRelative.SELF
@@ -63,9 +54,7 @@ _PLAYER_ENEMY = features.PlayerRelative.ENEMY
 
 FUNCTIONS = actions.FUNCTIONS
 _NO_OP = 0
-_ENV_NAME = "SC2MoveToBeacon-v0"
-
-actr.load_act_r_model("/home/user/github/Metaverse/Architectures/ACT-R_CMU/sc2beacons.lisp")
+_ENV_NAME = "SC2MoveToBeacon-v1"
 
 last_run_passed = False
 num_consecutive_passes = 0
@@ -74,100 +63,10 @@ episode_num = 1
 
 running = False
 
-model_action = None
-human_action = None
-move_cmd = 0
-key_monitor_installed = False
-mouse_monitor_installed = False
 
 ############### Globals ######################
 
-def _xy_locs(mask):
-  """Mask should be a set of bools from comparison with a feature layer."""
-  y, x = mask.nonzero()
-  return list(zip(x, y))
-
-
-#--------------------------- OLD StarCraft API Stuff ---------------------
-
-class BeaconAgent(base_agent.BaseAgent):
-  """An agent specifically for solving the MoveToBeacon map."""
-  #actr_env =
-
-  def __init__(self):
-      super(BeaconAgent, self).__init__()
-
-      self.status = 'none'
-      self.target = numpy.zeros(2)
-
-  def step(self, obs): #return the next action from FUNCTIONS
-
-    super(BeaconAgent, self).step(obs)
-
-    #self.response = [_NO_OP, []] #default response is to do nothing
-
-    if FUNCTIONS.Move_screen.id in obs.observation.available_actions: #if we can move
-
-      player_relative = obs.observation.feature_screen.player_relative
-
-      beacon = _xy_locs(player_relative == _PLAYER_NEUTRAL)
-
-      if not beacon: #The agent does not see a beacon
-        #actrGameEnv.screen.event = 'beacon'
-        return FUNCTIONS.no_op()
-
-        #If we are still here, the beacon was found
-      beacon_center = numpy.mean(beacon, axis=0).round()
-
-      if numpy.array_equal(beacon_center,self.target): #we are standing on the beacon
-          return FUNCTIONS.no_op()
-      else:
-        self.target = beacon_center #TODO update target coordinates
-        #actrGameEnv.screen.event = 'beacon'
-        self.status = 'moving' #TODO update state to moving
-        return FUNCTIONS.Move_screen("now", beacon_center)
-
-    else: #we can't move, so select a unit
-      #actrGameEnv.screen.event = 'moving' #TODO update state to not moving
-      return FUNCTIONS.select_army("select")
-
-
-def sc2_thread(*args):
-
-    FLAGS(args)
-
-    sc2env = sc2_env.SC2Env(
-        map_name="MoveToBeacon",
-        # players=[sc2_env.Agent(sc2_env.Race.terran),
-        #         sc2_env.Bot(sc2_env.Race.random,
-        #                     sc2_env.Difficulty.very_easy)],
-        players=[sc2_env.Agent(sc2_env.Race.terran)],
-
-        agent_interface_format=features.AgentInterfaceFormat(
-            feature_dimensions=features.Dimensions(screen=84, minimap=64),
-            use_feature_units=True),
-        step_mul=1,
-        game_steps_per_episode=0,
-        #screen_size_px=(128, 128),
-        visualize=True)
-        #visualize=False)
-
-    sc2agent.setup(sc2env.observation_spec(), sc2env.action_spec())
-
-    timesteps = sc2env.reset()
-
-    sc2agent.reset()
-
-    #    actrAgent.run()
-
-
-    while True:
-        step_actions = [sc2agent.step(timesteps[0])]
-        if timesteps[0].last():
-            break
-        timesteps = sc2env.step(step_actions)
-
-#----------------- ACT-R Stuff --------------------------
+#----------------- SOAR Stuff --------------------------
 
 class CliThread(threading.Thread): #Client thread for human intervention
 
@@ -181,103 +80,101 @@ class CliThread(threading.Thread): #Client thread for human intervention
             cmd = input("CMC> ")
             self.queue_main.put(cmd)
 
-def respond_to_keypress(model,key):#TODO see if we can include a mouse move and click
-    print("respond_to_keypress: " +key)
-    global move_cmd
-    actr.clear_exp_window(window)
-    if model:
-        move_cmd = key
-    else:
-        move_cmd = 0
+def create_kernel():
+    kernel = sml.Kernel.CreateKernelInCurrentThread()
+    if not kernel or kernel.HadError():
+        print("Error creating kernel: " + kernel.GetLastErrorDescription())
+        exit(1)
+    return kernel
 
-def add_key_monitor():
-    global key_monitor_installed
+def create_agent(kernel, name):
+    agent = kernel.CreateAgent("agent")
+    if not agent:
+        print("Error creating agent: " + kernel.GetLastErrorDescription())
+        exit(1)
+    return agent
 
-    if key_monitor_installed == False:
-        actr.add_command("sc2-key-press",respond_to_keypress,
-                         "sc2 task key output monitor")
-        actr.monitor_command("output-key","sc2-key-press")
-        key_monitor_installed = True
-        print("key monitor installed")
+def parse_output_commands(agent, structure):
+    commands = {}
+    mapping = {}
+    for cmd in range(0, agent.GetNumberCommands()):
+        error = False
+        command = agent.GetCommand(cmd)
+        cmd_name = command.GetCommandName()
+        if cmd_name in structure:
+            parameters = {}
+            for param_name in structure[cmd_name]:
+                param_value = command.GetParameterValue(param_name)
+                if param_value:
+                    parameters[param_name] = param_value
+            if not error:
+                commands[cmd_name] = parameters
+                mapping[cmd_name] = command
+        else:
+            error = True
+        if error:
+            command.AddStatusError()
+    return commands, mapping
 
-        return True
-    else:
-        return False
-
-def remove_key_monitor():
-
-    actr.remove_command_monitor("output-key","sc2-key-press")
-    actr.remove_command("sc2-key-press")
-
-    global key_monitor_installed
-    key_monitor_installed = False
-
-def respond_to_mouseclick(model,click,finger):#TODO see if we can include a mouse move and click
-    print("respond_to_mouseclick: " +click)
-    global move_cmd
-
-    if model:
-        move_cmd = click
-    else:
-        move_cmd = 0
-
-def add_mouse_monitor():
-    global mouse_monitor_installed
-
-    if mouse_monitor_installed == False:
-        actr.add_command("sc2-mouse-click",respond_to_mouseclick,
-                         "sc2 task mouse output monitor")
-        actr.monitor_command("click-mouse","sc2-mouse-click")
-        mouse_monitor_installed = True
-        print("mouse monitor installed")
-
-        return True
-    else:
-        return False
-
-def remove_mouse_monitor():
-
-    actr.remove_command_monitor("click-mouse","sc2-mouse-click")
-    actr.remove_command("sc2-mouse-click")
-
-    global mouse_monitor_installed
-    mouse_monitor_installed = False
+# callback registry
+def register_print_callback(kernel, agent, function, user_data=None):
+    agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, function, user_data)
 
 
-def update_model_action(obs):
+def get_move_command(agent):
 
-    #pre-process the observation, currently task-specific
+    move_cmd = [-1, -1]
+
+    if agent.Commands():
+
+        error = False
+        command = agent.GetCommand(0)
+        cmd_name = command.GetCommandName()
+
+        param_value_x = command.GetParameterValue('valx')
+        param_value_y = command.GetParameterValue('valy')
+
+        print("Soar agent command: " + str(cmd_name))
+        print("Soar agent values: " + str(param_value_x)+" "+str(param_value_y))
+
+        move_cmd = [int(param_value_x), int(param_value_y)]
+
+    return move_cmd
+
+
+def callback_print_message(mid, user_data, agent, message):
+    print(message.strip())
+
+#TODO: This should be automatically generated in MTL based on environment definition
+def create_input_wmes(agent):
+
+    gym_id = agent.GetInputLink().CreateIdWME('gym')
+
+    #list of entities and values that we care about, for SC2 Beacon it is the location.
+    pos_x = gym_id.CreateIntWME('x', 0)
+    pos_y = gym_id.CreateIntWME('y', 0)
+
+    agent.RunSelf(1)
+
+    return (pos_x, pos_y)
+
+def update_input_wmes(obs):
+    global input_wmes
+    (pos_x, pos_y) = input_wmes
+
+    #TODO: this could be generated by MTL
+
+    ## Observation matrix is pre-processed by sc2gym lib
+
     neutral_y, neutral_x = (obs[0] == _PLAYER_NEUTRAL).nonzero()
 
     target_x = int(neutral_x.mean())
     target_y = int(neutral_y.mean())
 
-    if not neutral_y.any():
-        raise Exception("Beacon not found!")
+    pos_x.Update(target_x)
+    pos_y.Update(target_y)
 
-    print("update_model_action: " + str(target_x)+","+str(target_y))
-    actr.add_text_to_exp_window(window, "B", x=target_x, y=target_y)
-
-    #if goal buffer has been defined, RPC mod-focus to update chunks
-    if actr.buffer_read('goal'):
-        print("mod_focus")
-        #update goal buffer chunks here
-        actr.mod_focus('beacon_x',target_x,'beacon_y', target_y)
-
-    #otherwise init goal with current observation
-    else:
-        print("goal_focus")
-        actr.goal_focus(actr.define_chunks(['isa','game-state','beacon_x',target_x,
-                                    'beacon_y', target_y,'state','start'])[0])
-
-    global model_action
-    model_action = 0 #replace with action space
-
-    global running
-
-    print("act-r running: "+str(running))
-    actr.run(5)
-    return model_action
+# BaseExample for SC2 Gym Environment Loop
 
 class BaseExample(object):
     def __init__(self, env_name, visualize=False, step_mul=None, random_seed=None) -> None:
@@ -297,13 +194,18 @@ class BaseExample(object):
         episode_rewards = np.zeros((num_episodes,), dtype=np.int32)
         episodes_done = 0
         for ix in range(num_episodes):
+
             obs = env.reset()
+            update_input_wmes(obs)
+            agent.RunSelf(1)
 
             done = False
             while not done:
                 action = self.get_action(env, obs)
                 obs, reward, done, _ = env.step(action)
-                update_model_action(obs)
+                #update_model_action(obs)
+                update_input_wmes(obs)
+                agent.RunSelf(1)
 
             # stop if the environment was interrupted for any reason
             if obs is None:
@@ -320,20 +222,32 @@ class BaseExample(object):
         raise NotImplementedError('Inherited classes must override get_action() method')
 
 
-class MoveToBeacon1d(BaseExample):
+class MoveToBeacon2d(BaseExample):
     def __init__(self, visualize=True, step_mul=None, random_seed=None) -> None:
         super().__init__(_ENV_NAME, visualize, step_mul, random_seed)
 
     def get_action(self, env, obs):
-        # print("Observation: "+obs[0])
+
+        #print("Observation: "+obs[0])
 
         # action logic...
+
+        temp_target = get_move_command(agent)
+
+        if temp_target is not None:
+            temp_target = str(temp_target)
+        else:
+            temp_target = "None"
+
+        print("Temp Target: "+temp_target)
+
         neutral_y, neutral_x = (obs[0] == _PLAYER_NEUTRAL).nonzero()
         if not neutral_y.any():
             raise Exception('Beacon not found!')
         target = [int(neutral_x.mean()), int(neutral_y.mean())]
-        target = np.ravel_multi_index(target, obs.shape[1:])
-        # print("Target: "+target)
+        #target = np.ravel_multi_index(target, obs.shape[1:])
+
+        print("Target: "+str(target))
 
         return target
 
@@ -348,21 +262,14 @@ if __name__ == "__main__":
     user_cmd_thread = CliThread(queue_user_cmds)
     user_cmd_thread.start()
 
-    # Create the ACT-R agent
-    window = actr.open_exp_window("Find Beacon")
-    actr.install_device(window)
-    add_key_monitor() #TODO hook this up to the SC2 env.ACTIONS
-    add_mouse_monitor()  # TODO hook this up to the SC2 env.ACTIONS
-    #
-    # sc2agent = BeaconAgent()
-    #
-    # game_thread = threading.Thread(target=sc2_thread, args=sys.argv)
-    # game_thread.start()
+    # Create the Soar agent
+    kernel = create_kernel()
+    agent = create_agent(kernel, "agent")
+    register_print_callback(kernel, agent, callback_print_message, None)
 
-    #TODO update to work ACT-R dispatch service
-    #model_thread = Process(target=actr_thread, args=sys.argv)
-    #model_thread = threading.Thread(target=actrGameEnv.run(), args=sys.argv)
-    #model_thread.start()
+    input_wmes = create_input_wmes(agent)
+
+    print(agent.ExecuteCommandLine("source starcraft2.soar"))
 
     ## example from sc2gameenv
 
@@ -377,7 +284,7 @@ if __name__ == "__main__":
                         help='the random seed to pass to the game environment')
     args = parser.parse_args()
 
-    example = MoveToBeacon1d(args.visualize, args.step_mul, args.random_seed)
+    example = MoveToBeacon2d(args.visualize, args.step_mul, args.random_seed)
     rewards = example.run(args.num_episodes)
 
     if rewards:
@@ -386,3 +293,12 @@ if __name__ == "__main__":
         print('Minimum reward: {}'.format(rewards.min()))
         print('Maximum reward: {}'.format(rewards.max()))
 
+    ## clean up
+
+    #gym_env.close()
+    # close the SC2 Environment
+
+
+    kernel.DestroyAgent(agent)
+    kernel.Shutdown()
+    del kernel

@@ -1,0 +1,57 @@
+rl --set learning on
+indifferent-selection --epsilon-greedy
+
+# Initialize the agent
+
+sp {propose*initialize-movetobeacon
+    (state <s> ^superstate nil
+               -^name)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-movetobeacon)
+    }
+
+sp {apply*initialize-movetobeacon
+    (state <s> ^operator <o>)
+    (<o> ^name initialize-movetobeacon)
+-->
+    (<s> ^name movetobeacon
+         ^direction <d1> <d2>
+         ^beacon <beacon>)
+    (<d1> ^name left)
+    (<d2> ^name right)
+    }
+
+# Propose*move-to-beacon:
+# If I see a beacon, then propose the move-to-beacon operator.
+
+sp {propose*move-to-beacon
+   (state <s> ^io.input-link.beacon <beacon>)
+   (<beacon> ^x <x> ^y <y>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move-to-beacon)
+}
+
+# Apply*move-to-beacon:
+# If the move-to-beacon operator is selected, then generate an output command to 
+# move to the beacon coordinates.
+
+sp {apply*move-to-beacon
+   (state <s> ^operator.name move-to-beacon
+              ^io.output-link <ol>)
+-->
+   (<ol> ^move.beacon <beacon>)
+   (<beacon> ^x <x> ^y <y>)}
+
+# Apply*move-to-beacon*remove-move
+# If the move-to-beacon successfully performs a move command, then remove
+# the command from the output-link
+
+sp {apply*move-to-beacon*remove-move
+   (state <s> ^operator.name move-to-beacon
+              ^io.output-link <ol>)
+   (<ol> ^move <move>)
+   (<move> ^status complete)
+-->
+   (<ol> ^move <move> -)}

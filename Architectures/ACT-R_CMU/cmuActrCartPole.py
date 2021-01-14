@@ -1,13 +1,18 @@
 import cmuactr as actr
 import math
 import numbers
+import os
 from os import environ as env
 import sys
 import gym
 import threading
 import queue
 
-actr.load_act_r_model("/home/user/github/Metaverse/Architectures/ACT-R_CMU/cartpole.lisp")
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+print(DIR_PATH)
+
+actr.load_act_r_model(DIR_PATH+"/cartpole.lisp")
+#actr.load_act_r_model("./cartpole.lisp")
 
 last_run_passed = False
 num_consecutive_passes = 0

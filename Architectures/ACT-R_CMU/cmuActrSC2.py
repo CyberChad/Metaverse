@@ -16,8 +16,6 @@ import numpy as np
 
 __description__ = 'Run a scripted example using the SC2MoveToBeacon-v0 environment.'
 
-
-
 import copy
 import time
 import threading
@@ -65,7 +63,16 @@ FUNCTIONS = actions.FUNCTIONS
 _NO_OP = 0
 _ENV_NAME = "SC2MoveToBeacon-v0"
 
-actr.load_act_r_model("/home/user/github/Metaverse/Architectures/ACT-R_CMU/sc2beacons.lisp")
+
+import os
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+print(DIR_PATH)
+
+actr.load_act_r_model(DIR_PATH+"/sc2beacons.lisp")
+
+ACTR_DIR = "/home/user/ACT-R/"
+
+#actr.load_act_r_model("./sc2beacons.lisp")
 
 last_run_passed = False
 num_consecutive_passes = 0
@@ -303,6 +310,13 @@ class BaseExample(object):
             while not done:
                 action = self.get_action(env, obs)
                 obs, reward, done, _ = env.step(action)
+                obs_s = str(obs)
+                reward_s = str(reward)
+                done_s = str(done)
+                print("Obs: "+obs_s)
+                print("Reward: "+reward_s)
+                print("Done: " +done_s)
+
                 update_model_action(obs)
 
             # stop if the environment was interrupted for any reason

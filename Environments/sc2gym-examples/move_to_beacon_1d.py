@@ -17,7 +17,7 @@ import argparse
 
 import numpy as np
 
-from examples.base_example import BaseExample
+from base_example import BaseExample
 
 __author__ = 'Islam Elnabarawy'
 __description__ = 'Run a scripted example using the SC2MoveToBeacon-v0 environment.'

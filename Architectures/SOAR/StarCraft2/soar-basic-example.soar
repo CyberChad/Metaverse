@@ -1,19 +1,33 @@
 rl --set learning on
 indifferent-selection --epsilon-greedy
 
-sp {init*agent
-    (state <s> ^type state -^name)
-    -->
-    (<s> ^name ready)
+# Initialize the agent
+
+
+sp {test*state
+    (state <s> ^io.input-link.gym <gym>)
+    (<gym> ^x <x> ^y <y>)
+   -->
+   (write (crlf)|SP:test*state|(crlf))
+   (write |input-link:|<gym> <x> <y>(crlf))
+   }
+
+#check input-link structure for observation
+sp {elaborate*read-observation
+    (state <s> ^io.input-link.gym <gym_in>)
+    (<gym_in> ^x <x> ^y <y>)
+-->
+    (<s> ^obs <obs>)
+    (<obs> ^x <x> ^y <y>)
+    (write (crlf)|SP:elaborate*read-observation|)
+    (write (crlf)|x: |<x> | y: |<y>(crlf))
     }
 
 sp {propose*move*create-output-command
-    (state <s> ^type state ^name ready
-    ^io.input-link.gym <gym_in>
-    -^output-cmd)
+    (state <s> ^type state
+        -^output-cmd)
 -->
-    (<s> ^operator <o>)
-    (<s> ^name waiting)
+    (<s> ^operator <o> +)
     (<o> ^name move)
     (write (crlf)|SP:propose*move*create-output-command|(crlf))
     (write |Op: |<o>)
@@ -22,13 +36,10 @@ sp {propose*move*create-output-command
 
 # create output command
 sp {apply*move*create-output-command
-    (state <s> ^operator <o> ^io <io>)
-    (<io> ^input-link.gym <gym_in>)
-    (<gym_in> ^x <x> ^y <y>)
+    (state <s> ^operator <o> ^io <io> ^obs.x <x> ^obs.y <y>)
     (<io> ^output-link <out>)
     (<o> ^name move)
 -->
-    (<s> ^name busy)
     (<s> ^output-cmd <output-cmd>)
     (<output-cmd> ^move <x> <y>)
     (<out> ^cmd <cmd>)
@@ -45,5 +56,4 @@ sp {apply*remove*old-output-command
 -->
     (<out> ^cmd <cmd> -)
     (<s> ^output-cmd <cmd> -)
-    (<s> ^name ready)
     }

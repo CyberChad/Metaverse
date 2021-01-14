@@ -19,6 +19,21 @@ from Architectures.SOAR.pysoarlib import *
 
 #DEBUG = True
 
+import unittest
+
+class TestACTR(unittest.TestCase):
+
+    def setUp(self):
+        # Load test data
+        self.app = App(database='fixtures/test_basic.json')
+
+    def test_customer_count(self):
+        self.assertEqual(len(self.app.customers), 100)
+
+class TestSOAR(unittest.TestCase):
+
+
+
 
 # *********** ACT-R Stuff **********************
 

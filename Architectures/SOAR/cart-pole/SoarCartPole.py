@@ -77,6 +77,7 @@ def register_print_callback(kernel, agent, function, user_data=None):
 
 def get_move_command(agent):
     output_command_list = { 'move-cart': ['direction'] }
+    #Maps to: (<s> ^output-cmd <output-cmd>) // (<output-cmd> ^direction <dir>)
 
     if agent.Commands():
         (commands, mapping) = parse_output_commands(agent, output_command_list)
@@ -138,8 +139,8 @@ if __name__ == "__main__":
     
     step_num = 0
     
-    print(agent.ExecuteCommandLine("source cart-pole.soar"))
-    #print(agent.ExecuteCommandLine("source cart-naive-approach.soar"))
+    print(agent.ExecuteCommandLine("source cart-naive-approach.soar")) #TODO: Why does sub-goaling run out of memory?
+    #print(agent.ExecuteCommandLine("source cart-pole.soar"))
     
     while True:
         gym_env.render()

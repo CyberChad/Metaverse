@@ -8,18 +8,19 @@ import sys
 
 print(sys.path)
 
-if "DYLD_LIBRARY_PATH" in env:
-    LIB_PATH = env["DYLD_LIBRARY_PATH"]
-elif "LD_LIBRARY_PATH" in env:
-    LIB_PATH = env["LD_LIBRARY_PATH"]
-elif "PATH" in env:
-    LIB_PATH = env["SOAR"]
-else:
-    print("Soar LIBRARY_PATH environment variable not set; quitting")
-    exit(1)
-LIB_PATH = "D:\Development\\SoarSuite_9.6.0-Multiplatform_64bit\\bin"
-sys.path.append(LIB_PATH)
-print("Path:"+LIB_PATH)
+# if "DYLD_LIBRARY_PATH" in env:
+#     LIB_PATH = env["DYLD_LIBRARY_PATH"]
+# elif "LD_LIBRARY_PATH" in env:
+#     LIB_PATH = env["LD_LIBRARY_PATH"]
+# elif "PATH" in env:
+#     LIB_PATH = env["SOAR"]
+# else:
+#     print("Soar LIBRARY_PATH environment variable not set; quitting")
+#     exit(1)
+
+#LIB_PATH = "D:\Development\\SoarSuite_9.6.0-Multiplatform_64bit\\bin"
+#sys.path.append(LIB_PATH)
+#print("Path:"+LIB_PATH)
 
 import Python_sml_ClientInterface as sml
 
@@ -42,11 +43,13 @@ def create_agent(kernel, name):
 # mid-level framework
 
 def cli(agent):
-    cmd = raw_input("soar> ")
+    #cmd = raw_input("soar> ")
+    cmd = input("soar> ")
     while cmd not in ("exit", "quit"):
         if cmd:
             print(agent.ExecuteCommandLine(cmd).strip())
-        cmd = raw_input("soar> ")
+        # cmd = raw_input("soar> ")
+        cmd = input("soar> ")
 
 def parameterize_commands(param_map, commands):
     return [cmd.format(**param_map) for cmd in commands]
