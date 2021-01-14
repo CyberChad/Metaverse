@@ -4,11 +4,11 @@ import time
 import threading
 
 #ACTR_CCMSuite includes
-import ccm
-from ccm.lib.actr import *
+#import ccm
+#from ccm.lib.actr import *
 
 #ACTR_Jakdot includes
-import pyactr as actr
+#import pyactr as actr
 
 #ACTR_CMU includes
 
@@ -22,141 +22,141 @@ from Architectures.SOAR.pysoarlib import *
 
 # *********** ACT-R Stuff **********************
 
-class Count(ACTR):
-
-    goal = Buffer()
-    retrieve = Buffer()
-    memory = Memory(retrieve)
-
-    def init():
-        print("<<< ACT-R Init >>>")
-        memory.add('count 0 1')
-        memory.add('count 1 2')
-        memory.add('count 2 3')
-        memory.add('count 3 4')
-        memory.add('count 4 5')
-        # memory.add('count 5 6')
-        # memory.add('count 6 7')
-        # memory.add('count 7 8')
-        # memory.add('count 8 9')
-        # memory.add('count 9 10')
-
-    def start(goal='countFrom ?start ?end starting'):
-        print("<<< ACT-R start >>>")
-        memory.request('count ?start ?next')
-        goal.set('countFrom ?start ?end counting')
-        #testtime.sleep(0.05)
-
-
-    def increment(goal='countFrom ?x !?x counting',
-                  retrieve='count ?x ?next'):
-        print("<<< ACT-R increment >>>")
-        print(x)
-        memory.request('count ?next ?nextNext')
-        goal.modify(_1=next)
-
-    def stop(goal='countFrom ?x ?x counting'):
-        print("<<< ACT-R stop >>>")
-        print(x)
-        goal.set('countFrom ?x ?x stop')
-
-
-
-class MotorModule(ccm.Model):
-    pass
+# #class Count(ACTR):
+#
+#     goal = Buffer()
+#     retrieve = Buffer()
+#     memory = Memory(retrieve)
+#
+#     def init():
+#         print("<<< ACT-R Init >>>")
+#         memory.add('count 0 1')
+#         memory.add('count 1 2')
+#         memory.add('count 2 3')
+#         memory.add('count 3 4')
+#         memory.add('count 4 5')
+#         # memory.add('count 5 6')
+#         # memory.add('count 6 7')
+#         # memory.add('count 7 8')
+#         # memory.add('count 8 9')
+#         # memory.add('count 9 10')
+#
+#     def start(goal='countFrom ?start ?end starting'):
+#         print("<<< ACT-R start >>>")
+#         memory.request('count ?start ?next')
+#         goal.set('countFrom ?start ?end counting')
+#         #testtime.sleep(0.05)
+#
+#
+#     def increment(goal='countFrom ?x !?x counting',
+#                   retrieve='count ?x ?next'):
+#         print("<<< ACT-R increment >>>")
+#         print(x)
+#         memory.request('count ?next ?nextNext')
+#         goal.modify(_1=next)
+#
+#     def stop(goal='countFrom ?x ?x counting'):
+#         print("<<< ACT-R stop >>>")
+#         print(x)
+#         goal.set('countFrom ?x ?x stop')
+#
+#
+#
+# #class MotorModule(ccm.Model):
+# #    pass
 
 # *************** Jakdot ACT-R Stuff *****************
 
-def test_jakdot(start,end):
-
-    counting = actr.ACTRModel()
-
-    #Each chunk type should be defined first.
-    actr.chunktype("countOrder", ("first", "second"))
-    #Chunk type is defined as (name, attributes)
-
-    #Attributes are written as an iterable (above) or as a string, separated by comma:
-    actr.chunktype("countOrder", "first, second")
-
-    dm = counting.decmem
-    #this creates declarative memory
-
-    dm.add(actr.chunkstring(string="\
-        isa countOrder\
-        first 0\
-        second 1"))
-
-    dm.add(actr.chunkstring(string="\
-        isa countOrder\
-        first 1\
-        second 2"))
-    dm.add(actr.chunkstring(string="\
-        isa countOrder\
-        first 2\
-        second 3"))
-    dm.add(actr.chunkstring(string="\
-        isa countOrder\
-        first 3\
-        second 4"))
-    dm.add(actr.chunkstring(string="\
-        isa countOrder\
-        first 4\
-        second 5"))
-
-    #creating goal buffer
-    actr.chunktype("countFrom", ("start", "end", "count"))
-
-    #production rules follow; using productionstring, they are similar to Lisp ACT-R
-
-    counting.productionstring(name="start", string="""
-        =g>
-        isa countFrom
-        start =x
-        count None
-        ==>
-        =g>
-        isa countFrom
-        count =x
-        +retrieval>
-        isa countOrder
-        first =x""")
-
-    counting.productionstring(name="increment", string="""
-        =g>
-        isa     countFrom
-        count       =x
-        end         ~=x
-        =retrieval>
-        isa     countOrder
-        first       =x
-        second      =y
-        ==>
-        =g>
-        isa     countFrom
-        count       =y
-        +retrieval>
-        isa     countOrder
-        first       =y""")
-
-    counting.productionstring(name="stop", string="""
-        =g>
-        isa     countFrom
-        count       =x
-        end         =x
-        ==>
-        ~g>""")
-
-    #adding stuff to goal buffer
-    numrange_chunk = "isa countFrom start {} end {}".format(start,end)
-    #counting.goal.add(actr.chunkstring(string="isa countFrom start 0 end 5"))
-    #counting.goal.add(actr.chunkstring(numrange_chunk))
-    counting.goal.add(actr.chunkstring(string="isa countFrom start {} end {}".format(start,end)))
-
-    x = counting.simulation()
-
-    print("{{{{{ START JAKDOT-R }}}}}")
-    x.run()
-    print("{{{{{ END JAKDOT-R }}}}}")
+# def test_jakdot(start,end):
+#
+#     counting = actr.ACTRModel()
+#
+#     #Each chunk type should be defined first.
+#     actr.chunktype("countOrder", ("first", "second"))
+#     #Chunk type is defined as (name, attributes)
+#
+#     #Attributes are written as an iterable (above) or as a string, separated by comma:
+#     actr.chunktype("countOrder", "first, second")
+#
+#     dm = counting.decmem
+#     #this creates declarative memory
+#
+#     dm.add(actr.chunkstring(string="\
+#         isa countOrder\
+#         first 0\
+#         second 1"))
+#
+#     dm.add(actr.chunkstring(string="\
+#         isa countOrder\
+#         first 1\
+#         second 2"))
+#     dm.add(actr.chunkstring(string="\
+#         isa countOrder\
+#         first 2\
+#         second 3"))
+#     dm.add(actr.chunkstring(string="\
+#         isa countOrder\
+#         first 3\
+#         second 4"))
+#     dm.add(actr.chunkstring(string="\
+#         isa countOrder\
+#         first 4\
+#         second 5"))
+#
+#     #creating goal buffer
+#     actr.chunktype("countFrom", ("start", "end", "count"))
+#
+#     #production rules follow; using productionstring, they are similar to Lisp ACT-R
+#
+#     counting.productionstring(name="start", string="""
+#         =g>
+#         isa countFrom
+#         start =x
+#         count None
+#         ==>
+#         =g>
+#         isa countFrom
+#         count =x
+#         +retrieval>
+#         isa countOrder
+#         first =x""")
+#
+#     counting.productionstring(name="increment", string="""
+#         =g>
+#         isa     countFrom
+#         count       =x
+#         end         ~=x
+#         =retrieval>
+#         isa     countOrder
+#         first       =x
+#         second      =y
+#         ==>
+#         =g>
+#         isa     countFrom
+#         count       =y
+#         +retrieval>
+#         isa     countOrder
+#         first       =y""")
+#
+#     counting.productionstring(name="stop", string="""
+#         =g>
+#         isa     countFrom
+#         count       =x
+#         end         =x
+#         ==>
+#         ~g>""")
+#
+#     #adding stuff to goal buffer
+#     numrange_chunk = "isa countFrom start {} end {}".format(start,end)
+#     #counting.goal.add(actr.chunkstring(string="isa countFrom start 0 end 5"))
+#     #counting.goal.add(actr.chunkstring(numrange_chunk))
+#     counting.goal.add(actr.chunkstring(string="isa countFrom start {} end {}".format(start,end)))
+#
+#     x = counting.simulation()
+#
+#     print("{{{{{ START JAKDOT-R }}}}}")
+#     x.run()
+#     print("{{{{{ END JAKDOT-R }}}}}")
 
 ##### ******* Soar Stuff *************
 
@@ -246,7 +246,7 @@ if __name__ == "__main__":
     #run in serial
 
     #test_ccmactr(start,end)
-    test_cmuactr(start,end)
+    #test_cmuactr(start,end)
     time.sleep(3)
     #test_jakdot(start,end)
     test_soar(start, end)
