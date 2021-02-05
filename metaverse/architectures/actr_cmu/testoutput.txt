@@ -1,0 +1,284 @@
+#|Warning: Extending chunks with slot named FIRST because of chunk definition (B FIRST 1 SECOND 2) |#
+#|Warning: Extending chunks with slot named SECOND because of chunk definition (B FIRST 1 SECOND 2) |#
+#|Warning: Extending chunks with slot named START because of chunk definition (FIRST-GOAL START 1 END 6) |#
+#|Warning: Extending chunks with slot named END because of chunk definition (FIRST-GOAL START 1 END 6) |#
+#|Warning: Production INIT-AGENT uses previously undefined slots (COUNT). |#
+#|Warning: Extending chunks with slot named FIRST because of chunk definition (B FIRST 1 SECOND 2) |#
+#|Warning: Extending chunks with slot named SECOND because of chunk definition (B FIRST 1 SECOND 2) |#
+#|Warning: Extending chunks with slot named START because of chunk definition (FIRST-GOAL START 1 END 6) |#
+#|Warning: Extending chunks with slot named END because of chunk definition (FIRST-GOAL START 1 END 6) |#
+#|Warning: Production INIT-AGENT uses previously undefined slot COUNT. |#
+     0.000   GOAL                   SET-BUFFER-CHUNK GOAL FIRST-GOAL NIL
+     0.000   PROCEDURAL             CONFLICT-RESOLUTION
+     0.000   PROCEDURAL             PRODUCTION-SELECTED INIT-AGENT
+     0.000   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.050   PROCEDURAL             PRODUCTION-FIRED INIT-AGENT
+     0.050   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.050   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.050   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.050   DECLARATIVE            start-retrieval
+     0.050   PROCEDURAL             CONFLICT-RESOLUTION
+     0.100   DECLARATIVE            RETRIEVED-CHUNK B
+     0.100   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL B
+     0.100   PROCEDURAL             CONFLICT-RESOLUTION
+     0.100   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.100   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.100   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.150   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+1
+     0.150   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.150   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.150   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.150   DECLARATIVE            start-retrieval
+     0.150   PROCEDURAL             CONFLICT-RESOLUTION
+     0.200   DECLARATIVE            RETRIEVED-CHUNK C
+     0.200   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL C
+     0.200   PROCEDURAL             CONFLICT-RESOLUTION
+     0.200   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.200   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.200   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.250   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+2
+     0.250   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.250   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.250   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.250   DECLARATIVE            start-retrieval
+     0.250   PROCEDURAL             CONFLICT-RESOLUTION
+     0.300   DECLARATIVE            RETRIEVED-CHUNK D
+     0.300   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL D
+     0.300   PROCEDURAL             CONFLICT-RESOLUTION
+     0.300   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.300   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.300   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.350   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+3
+     0.350   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.350   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.350   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.350   DECLARATIVE            start-retrieval
+     0.350   PROCEDURAL             CONFLICT-RESOLUTION
+     0.400   DECLARATIVE            RETRIEVED-CHUNK E
+     0.400   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL E
+     0.400   PROCEDURAL             CONFLICT-RESOLUTION
+     0.400   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.400   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.400   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.450   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+4
+     0.450   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.450   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.450   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.450   DECLARATIVE            start-retrieval
+     0.450   PROCEDURAL             CONFLICT-RESOLUTION
+     0.500   DECLARATIVE            RETRIEVED-CHUNK F
+     0.500   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL F
+     0.500   PROCEDURAL             CONFLICT-RESOLUTION
+     0.500   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.500   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.500   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.550   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+5
+     0.550   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.550   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.550   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.550   DECLARATIVE            start-retrieval
+     0.550   PROCEDURAL             CONFLICT-RESOLUTION
+     0.550   PROCEDURAL             PRODUCTION-SELECTED STOP
+     0.550   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.600   DECLARATIVE            RETRIEVAL-FAILURE
+     0.600   PROCEDURAL             PRODUCTION-FIRED STOP
+6
+     0.600   PROCEDURAL             CLEAR-BUFFER GOAL
+     0.600   PROCEDURAL             CONFLICT-RESOLUTION
+     0.600   ------                 Stopped because no events left to process
+49
+48
+43
+48
+32
+114
+101
+99
+111
+114
+100
+115
+32
+105
+110
+10
+49
+48
+43
+48
+32
+114
+101
+99
+111
+114
+100
+115
+32
+111
+117
+116
+10
+49
+48
+52
+56
+53
+55
+54
+48
+32
+98
+121
+116
+101
+115
+32
+40
+49
+48
+32
+77
+66
+44
+32
+49
+48
+32
+77
+105
+66
+41
+32
+99
+111
+112
+105
+101
+100
+44
+32
+48
+46
+48
+54
+49
+54
+53
+57
+52
+32
+115
+44
+32
+49
+55
+48
+32
+77
+66
+47
+115
+10
+[[0,[["GOAL",null,null,null,null,null,true,null,"","FIRST-GOAL",""]]],[50,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[100,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[150,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[200,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[250,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[300,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[350,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[400,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[450,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[500,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[550,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[600,[["GOAL",null,true,null,null,null,true,null,"","",""]]]]
+[[0,[["GOAL",null,null,null,null,null,true,null,"","FIRST-GOAL",""]]],[50,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[100,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[150,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[200,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[250,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[300,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[350,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[400,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[450,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[500,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[550,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[600,[["GOAL",null,true,null,null,null,true,null,"","",""]]]]
+#|Warning: Extending chunks with slot named FIRST because of chunk definition (B FIRST 1 SECOND 2) |#
+#|Warning: Extending chunks with slot named SECOND because of chunk definition (B FIRST 1 SECOND 2) |#
+#|Warning: Extending chunks with slot named START because of chunk definition (FIRST-GOAL START 1 END 6) |#
+#|Warning: Extending chunks with slot named END because of chunk definition (FIRST-GOAL START 1 END 6) |#
+#|Warning: Production INIT-AGENT uses previously undefined slots (COUNT). |#
+#|Warning: Extending chunks with slot named FIRST because of chunk definition (B FIRST 1 SECOND 2) |#
+#|Warning: Extending chunks with slot named SECOND because of chunk definition (B FIRST 1 SECOND 2) |#
+#|Warning: Extending chunks with slot named START because of chunk definition (FIRST-GOAL START 1 END 6) |#
+#|Warning: Extending chunks with slot named END because of chunk definition (FIRST-GOAL START 1 END 6) |#
+#|Warning: Production INIT-AGENT uses previously undefined slot COUNT. |#
+     0.000   GOAL                   SET-BUFFER-CHUNK GOAL FIRST-GOAL NIL
+     0.000   PROCEDURAL             CONFLICT-RESOLUTION
+     0.000   PROCEDURAL             PRODUCTION-SELECTED INIT-AGENT
+     0.000   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.050   PROCEDURAL             PRODUCTION-FIRED INIT-AGENT
+     0.050   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.050   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.050   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.050   DECLARATIVE            start-retrieval
+     0.050   PROCEDURAL             CONFLICT-RESOLUTION
+     0.100   DECLARATIVE            RETRIEVED-CHUNK B
+     0.100   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL B
+     0.100   PROCEDURAL             CONFLICT-RESOLUTION
+     0.100   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.100   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.100   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.150   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+1
+     0.150   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.150   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.150   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.150   DECLARATIVE            start-retrieval
+     0.150   PROCEDURAL             CONFLICT-RESOLUTION
+     0.200   DECLARATIVE            RETRIEVED-CHUNK C
+     0.200   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL C
+     0.200   PROCEDURAL             CONFLICT-RESOLUTION
+     0.200   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.200   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.200   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.250   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+2
+     0.250   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.250   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.250   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.250   DECLARATIVE            start-retrieval
+     0.250   PROCEDURAL             CONFLICT-RESOLUTION
+     0.300   DECLARATIVE            RETRIEVED-CHUNK D
+     0.300   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL D
+     0.300   PROCEDURAL             CONFLICT-RESOLUTION
+     0.300   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.300   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.300   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.350   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+3
+     0.350   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.350   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.350   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.350   DECLARATIVE            start-retrieval
+     0.350   PROCEDURAL             CONFLICT-RESOLUTION
+     0.400   DECLARATIVE            RETRIEVED-CHUNK E
+     0.400   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL E
+     0.400   PROCEDURAL             CONFLICT-RESOLUTION
+     0.400   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.400   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.400   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.450   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+4
+     0.450   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.450   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.450   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.450   DECLARATIVE            start-retrieval
+     0.450   PROCEDURAL             CONFLICT-RESOLUTION
+     0.500   DECLARATIVE            RETRIEVED-CHUNK F
+     0.500   DECLARATIVE            SET-BUFFER-CHUNK RETRIEVAL F
+     0.500   PROCEDURAL             CONFLICT-RESOLUTION
+     0.500   PROCEDURAL             PRODUCTION-SELECTED INCREMENT
+     0.500   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.500   PROCEDURAL             BUFFER-READ-ACTION RETRIEVAL
+     0.550   PROCEDURAL             PRODUCTION-FIRED INCREMENT
+5
+     0.550   PROCEDURAL             MOD-BUFFER-CHUNK GOAL
+     0.550   PROCEDURAL             MODULE-REQUEST RETRIEVAL
+     0.550   PROCEDURAL             CLEAR-BUFFER RETRIEVAL
+     0.550   DECLARATIVE            start-retrieval
+     0.550   PROCEDURAL             CONFLICT-RESOLUTION
+     0.550   PROCEDURAL             PRODUCTION-SELECTED STOP
+     0.550   PROCEDURAL             BUFFER-READ-ACTION GOAL
+     0.600   DECLARATIVE            RETRIEVAL-FAILURE
+     0.600   PROCEDURAL             PRODUCTION-FIRED STOP
+6
+     0.600   PROCEDURAL             CLEAR-BUFFER GOAL
+     0.600   PROCEDURAL             CONFLICT-RESOLUTION
+     0.600   ------                 Stopped because no events left to process
+[[0,[["GOAL",null,null,null,null,null,true,null,"","FIRST-GOAL",""]]],[50,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[100,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[150,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[200,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[250,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[300,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[350,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[400,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[450,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[500,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[550,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[600,[["GOAL",null,true,null,null,null,true,null,"","",""]]]]
+[[0,[["GOAL",null,null,null,null,null,true,null,"","FIRST-GOAL",""]]],[50,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[100,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[150,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[200,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[250,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[300,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[350,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[400,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[450,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[500,[["GOAL",null,null,null,null,null,true,null,"","",""]]],[550,[["GOAL",null,null,null,null,null,true,true,"","",""]]],[600,[["GOAL",null,true,null,null,null,true,null,"","",""]]]]
