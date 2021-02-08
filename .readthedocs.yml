@@ -22,4 +22,7 @@ python:
 submodules:
    include:
       - metaverse
+      - architectures
+      - environments
+      - experiments
    recursive: true
