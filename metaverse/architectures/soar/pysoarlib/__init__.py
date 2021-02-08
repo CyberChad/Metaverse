@@ -13,9 +13,11 @@ Also adds helper methods to the Identifier class to access children more easily
 Note that LanguageConnector and RosieMessageParser
     are used in Rosie and not all that useful for general users
 """
-import Python_sml_ClientInterface as sml
 
 __all__ = ["WMInterface", "SoarWME", "SoarUtils", "SVSCommands", "AgentConnector", "LanguageConnector", "RosieMessageParser", "SoarAgent"]
+
+#import Python_sml_ClientInterface as sml
+import metaverse.architectures.soar.SoarLibs.Python_sml_ClientInterface as sml
 
 # Extend the sml Identifier class definition with additional utility methods
 from .IdentifierExtensions import *

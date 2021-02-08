@@ -66,7 +66,7 @@ class CmuExperiment():
         print("*** ACTIVATION TRACE ***")
         print(actr.print_activation_trace("first 0.6"))
 
-        actr.save_history_data("go  al", "../../history_output.json")
+        actr.save_history_data("goal", "../../history_output.json")
 
 if __name__ == "__main__":
 

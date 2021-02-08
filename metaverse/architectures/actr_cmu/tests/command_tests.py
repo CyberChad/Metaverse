@@ -1,5 +1,5 @@
 import os
-import cmuactr as actr
+import metaverse.architectures.actr_cmu.cmuactr_sorted as actr
 
 import json
 
@@ -41,8 +41,6 @@ def test_reporting():
     print("-- PRINT ALL BUFFERS --")
 
     print(str(actr.buffers()))
-
-
 
 def test_buffers():
 

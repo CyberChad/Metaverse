@@ -15,9 +15,11 @@ DEBUG = False
 # else:
 #     print("Soar LIBRARY_PATH environment variable not set; quitting")
 #     exit(1)
-# sys.path.append(LIB_PATH)
 
-import Python_sml_ClientInterface as sml
+LIB_PATH='/home/users/chad/Dropbox/Metaverse/metaverse/architecturas/soar'
+sys.path.append(LIB_PATH)
+import metaverse.architectures.soar.SoarLibs.Python_sml_ClientInterface as sml
+
 
 last_run_passed = False
 num_consecutive_passes = 0

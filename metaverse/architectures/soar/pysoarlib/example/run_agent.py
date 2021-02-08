@@ -1,4 +1,9 @@
-from metaverse.architectures.soar.pysoarlib import *
+import metaverse.architectures.soar.pysoarlib
+import metaverse.architectures.soar.SoarLibs
+from metaverse.architectures.soar.pysoarlib import \
+    AgentConnector,\
+    SoarAgent,\
+    SoarWME
 
 class SimpleConnector(AgentConnector):
     def __init__(self, agent):

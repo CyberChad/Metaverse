@@ -18,12 +18,13 @@ print(sys.path)
 #     print("Soar LIBRARY_PATH environment variable not set; quitting")
 #     exit(1)
 
-#LIB_PATH = "D:\Development\\SoarSuite_9.6.0-Multiplatform_64bit\\bin"
-#sys.path.append(LIB_PATH)
+
+LIB_PATH = "/home/chad/Dropbox/Metaverse/metaverse/architectures/soar"
+sys.path.append(LIB_PATH)
 #print("Path:"+LIB_PATH)
 
 
-import SoarLibs.Python_sml_ClientInterface as sml
+import Python_sml_ClientInterface as sml
 
 # low level Soar functions
 

@@ -17,7 +17,7 @@ import logging
 import sys
 
 # ********************************************
-#               Factories
+#               Abstract Factories
 # ********************************************
 
 class AbstractFactory(ABC):
@@ -37,27 +37,24 @@ class AbstractFactory(ABC):
     def createWorkingMemory(self) -> AbstractWorkingMemory:
         pass
 
-    # @abstractmethod
-    # def createDeclarativeMemory(self) -> AbstractDeclarativeMemory:
-    #     pass
-    #
-    # @abstractmethod
-    # def createProceduralMemory(self) -> AbstractProceduralMemory:
-    #     pass
-    #
-    # @abstractmethod
-    # def createPerception(self) -> AbstractPerception:
-    #     pass
-    #
-    # @abstractmethod
-    # def createMotor(self) -> AbstractMotor:
-    #     pass
+    @abstractmethod
+    def createDeclarativeMemory(self) -> AbstractDeclarativeMemory:
+        pass
 
+    @abstractmethod
+    def createProceduralMemory(self) -> AbstractProceduralMemory:
+        pass
 
+    @abstractmethod
+    def createPerception(self) -> AbstractPerception:
+        pass
 
+    @abstractmethod
+    def createMotor(self) -> AbstractMotor:
+        pass
 
 # ********************************************
-#               Products
+#               Abstract Products
 # ********************************************
 
 class AbstractModel(ABC):
@@ -67,7 +64,11 @@ class AbstractModel(ABC):
     """
 
     @abstractmethod
-    def create(self) -> str:
+    def __init__(self) -> str:
+        pass
+
+    @abstractmethod
+    def load(self) -> str:
         pass
 
     @abstractmethod
@@ -87,9 +88,6 @@ class AbstractModel(ABC):
         pass
 
 
-"""
-Concrete Products are created by corresponding Concrete Factories.
-"""
 
 class AbstractWorkingMemory(ABC):
     """
@@ -114,10 +112,57 @@ class AbstractWorkingMemory(ABC):
         """
         pass
 
+class AbstractDeclarativeMemory(ABC):
+    """
+    Here's the the base interface of another product. All products can interact
+    with each other, but proper interaction is possible only between products of
+    the same concrete variant.
+    """
+    @abstractmethod
+    def addDM(self) -> None:
+        """
+        Product B is able to do its own thing...
+        """
+        pass
 
-"""
-Concrete Products are created by corresponding Concrete Factories.
-"""
+class AbstractProceduralMemory(ABC):
+    """
+    Here's the the base interface of another product. All products can interact
+    with each other, but proper interaction is possible only between products of
+    the same concrete variant.
+    """
+    @abstractmethod
+    def addPM(self) -> None:
+        """
+        Product B is able to do its own thing...
+        """
+        pass
+
+class AbstractPerception(ABC):
+    """
+    Here's the the base interface of another product. All products can interact
+    with each other, but proper interaction is possible only between products of
+    the same concrete variant.
+    """
+    @abstractmethod
+    def addPerception(self) -> None:
+        """
+        Product B is able to do its own thing...
+        """
+        pass
+
+class AbstractMotor(ABC):
+    """
+    Here's the the base interface of another product. All products can interact
+    with each other, but proper interaction is possible only between products of
+    the same concrete variant.
+    """
+    @abstractmethod
+    def addMotor(self) -> None:
+        """
+        Product B is able to do its own thing...
+        """
+        pass
 
 # ************************* Client Code ***********
 

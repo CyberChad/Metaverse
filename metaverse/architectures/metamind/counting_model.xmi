@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metamind:Model xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:metamind="http://www.chadpeters.net/metamind" name="counting">
+  <modules xsi:type="metamind:DeclarativeMemory" name="DM">
+    <buffer name="DM-buffer">
+      <bufferchunk name="chunk-1">
+        <slot value="first"/>
+        <slot value="second"/>
+      </bufferchunk>
+    </buffer>
+  </modules>
+  <modules xsi:type="metamind:ProceduralMemory" name="ProcMem">
+    <rules name="first-rule">
+      <conditions>
+        <LHSbuffers>
+          <bufferchunk name="chunk1"/>
+        </LHSbuffers>
+      </conditions>
+      <actions/>
+    </rules>
+  </modules>
+  <modules xsi:type="metamind:Motor"/>
+  <modules xsi:type="metamind:Visual"/>
+  <environment/>
+</metamind:Model>

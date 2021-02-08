@@ -6,7 +6,8 @@ from time import sleep
 
 import subprocess
 
-import Python_sml_ClientInterface as sml
+#import Python_sml_ClientInterface as sml
+import metaverse.architectures.soar.SoarLibs.Python_sml_ClientInterface as sml
 from .SoarWME import SoarWME
 from .TimeInfo import TimeInfo
 
