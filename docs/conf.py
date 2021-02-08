@@ -28,7 +28,11 @@ author = 'Chad Peters'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
-extensions = ['recommonmark', 'sphinxcontrib.napoleon']
+extensions = [
+    'recommonmark',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon'
+]
 
 # Napoleon settings
 napoleon_google_docstring = True
