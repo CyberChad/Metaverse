@@ -18,3 +18,5 @@ Architectures/SOAR/SoarLibs/__pycache__/
 *.pyc
 
 *.log
+
+*.zip
