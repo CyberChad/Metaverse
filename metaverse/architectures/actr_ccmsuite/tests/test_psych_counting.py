@@ -1,13 +1,5 @@
 import ccm
 from ccm.lib.actr import *
-from Architectures.SOAR.SoarLibs import Python_sml_ClientInterface as sml
-
-
-
-cmcGoal = metaBuffer()
-cmcRetrieve = metaBuffer()
-cmcMemory = metaMemory()
-
 
 class ActrAgent(ACTR):
     goal = Buffer()
@@ -31,7 +23,7 @@ class ActrAgent(ACTR):
     def terminateAddition(goal='add ?num1 ?num2 count:?num2 sum:?sum'):
         goal.set('result ?sum')
         print(sum)
-        goal.set('add 5 2 count:None sum:None')
+        #goal.set('add 5 2 count:None sum:None')
 
     def incrementSum(goal='add ?num1 ?num2 count:?count!?num2 sum:?sum',
                      retrieve='count ?sum ?next'):
@@ -48,6 +40,8 @@ class MotorModule(ccm.Model):
 
 
 if __name__ == "__main__":
+
+    """Simple counting agent."""
 
     # init ACT-R_CMU agent player
     model = ActrAgent()
