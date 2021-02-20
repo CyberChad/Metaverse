@@ -2,11 +2,13 @@ import ccm
 from ccm.lib.actr import *
 
 class ActrAgent(ACTR):
+
     goal = Buffer()
     retrieve = Buffer()
     memory = Memory(retrieve)
 
     def init():
+
         memory.add('count 0 1')
         memory.add('count 1 2')
         memory.add('count 2 3')
@@ -46,4 +48,7 @@ if __name__ == "__main__":
     # init ACT-R_CMU agent player
     model = ActrAgent()
     model.goal.set('add 5 2 count:None sum:None')
-    model.run()
+
+    ccm.log_everything(model)
+
+    model.run(0.05)

@@ -4,6 +4,9 @@ import importlib
 import sys
 import os
 
+import logging
+import logging.config
+
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
 
@@ -19,6 +22,12 @@ import metaverse.environments
 import metaverse.experiments
 from metaverse.experiments.exp_factory import Experiment
 
+import metaverse.architectures.actr_cmu.cmuactr_factory as cmu_factory
+import metaverse.architectures.soar.soar_factory as soar_factory
+import metaverse.architectures.actr_ccmsuite.ccmsuite_factory as ccm_factory
+
+from metaverse.environments.env_factory import SimpleEnvironment, GymEnvironment
+
 from metaverse.experiments import *
 
 from subprocess import *
@@ -26,7 +35,7 @@ from subprocess import *
 from metaverse import director
 
 from metaverse.architectures import arch_factory
-from metaverse.architectures.actr_cmu.actr_cmu_factory import CmuActrFactory
+from metaverse.architectures.actr_cmu.cmuactr_factory import CmuActrFactory
 
 from metaverse.architectures.soar.soar_factory import SoarFactory
 
@@ -46,6 +55,31 @@ SOAR_PATH = "" #not sure if this is necessary with SoarLibs
 
 #Client thread for human intervention
 
+"""
+Based on http://docs.python.org/howto/logging.html#configuring-logging
+"""
+dictLogConfig = {
+    "version": 1,
+    "handlers": {
+        "fileHandler": {
+            "class": "logging.FileHandler",
+            "formatter": "myFormatter",
+            "filename": "config.log"
+        }
+    },
+    "loggers": {
+        "metaDemo": {
+            "handlers": ["fileHandler"],
+            "level": "INFO",
+        }
+    },
+
+    "formatters": {
+        "myFormatter": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        }
+    }
+}
 
 def loadFromXML(file):
 
@@ -194,87 +228,231 @@ class MyPrompt(Cmd):
     def do_demo(self, line=""):
         """Run the demo with multiple options."""
 
-        psych_envs = ['Counting']
-        gym_envs = ['CartPole-v0', 'MountainCar-v1', 'LunarLander-v1']  # TODO: create env registry
-        sc2_envs = ['MoveToBeacon']  # TODO: replace with Gym versions
+        psych_tests = ['Counting']
+        gym_tests = ['CartPole-v0', 'MountainCar-v1', 'LunarLander-v1']  # TODO: create env registry
+        sc2_tests = ['MoveToBeacon']  # TODO: replace with Gym versions
 
-        print(f"Environments Registry: {psych_envs} {gym_envs} {sc2_envs}")
+        env_list = [psych_tests, gym_tests, sc2_tests]
+
+        #print(f"Environments Registry: {psych_envs} {gym_envs} {sc2_envs}")
 
         architectures = ['CMUACTR', 'CCMACTR', 'Soar', 'Nengo']  # TODO: create arch registry
         print("Architecture Registry: " + str(architectures))
 
         print("Starting Psych Model experiments...")
 
-        import metaverse.architectures.actr_cmu.actr_cmu_factory as cmu_factory
-        import metaverse.architectures.soar.soar_factory as soar_factory
+
 
         factory_switch = {
             "CMUACTR": cmu_factory.CmuActrFactory(),
-            "SOAR" : soar_factory.SoarFactory()
+            "SOAR" : soar_factory.SoarFactory(),
+            "CCMSUITE" : ccm_factory.CcmFactory()
         }
 
         model_switch = {
             "CMUACTR": "cmu_count_test.lisp",
-            "SOAR": "notsureyet"
+            "SOAR": "soar_agent.config",
+            "CCMSUITE" : ""
         }
 
-        arch_list = ['CMUACTR', 'SOAR']
+        arch_list = ['CMUACTR', 'SOAR', 'CCMSUITE']
 
-        for arch in arch_list:
-            factory = factory_switch.get(arch, arch_factory.AbstractFactory)
-            modelFile = model_switch.get(arch)  # TODO: load from experiment config
-            model = factory.createModel()
-            model.load(modelFile)  # TODO: rename to load()?
+        for env in env_list:
+#            print(f"Environment: {env}")
+            for test in env:
+                for arch in arch_list:
+                    print(f"Running {arch} on {test} test.")
+                    #TODO: call to experiment
 
+def test_cmu_counting():
 
-            """
-            *************************************
-                Choose architecture sub-options for:
-            *************************************
-                    > Declarative Memory
-                    > Procedural Memory
-                    > Others??
-            """
+    # test CMU ACT-R Counting
+    factory = cmu_factory.CmuActrFactory()
+    model = factory.createModel()
+    model.load("/tests/psych/count_test.lisp")
 
-            model.workingMemory = factory.createWorkingMemory()
-            model.declarativeMemory = factory.createDeclarativeMemory()
-            model.proceduralMemory = factory.createProceduralMemory()
-            model.perception = factory.createPerception()
-            model.motor = factory.createMotor()
+    myenv = SimpleEnvironment("counting")
 
-
-            from metaverse.environments.env_factory import Environment
-
-            myenv = Environment()
-
-            """
-            Configure environment-specific options:
-            > map or challenge
-            > single or multi-agent
-            > difficulty rating
-            """
+    myexp = Experiment(model, myenv, "CMU Counting")
+    myexp.start("cmu_count_test") # appends to a log file
+    myexp.run(1, 6)
+    myexp.stop() #closes log file
+    # myexp.report()
 
 
-            myexp = Experiment(model, myenv)
-            myexp.run()
+def test_cmu_cartpole():
 
+    # test CMU ACT-R Counting
+    factory = cmu_factory.CmuActrFactory()
+    model = factory.createModel()
+
+    model.load("/tests/gym/cartpole.lisp")
+
+    myenv = GymEnvironment("CartPole-v0") #TODO: pass registered gym.env_id??
+
+    myexp = Experiment(model, myenv, "CMU Gym Cartpole")
+    myexp.start("cmu_cartpole") # appends to a log file
+    myexp.run(10, 195) #if no cycles provided, env determines end state
+    myexp.stop() #closes log file
+    #myexp.report()
+
+def test_cmu_starcraft():
+
+    # test CMU ACT-R Counting
+    factory = cmu_factory.CmuActrFactory()
+    model = factory.createModel()
+
+    model.load("/tests/gym/cartpole.lisp")
+
+    myenv = GymEnvironment("CartPole-v0") #TODO: pass registered gym.env_id??
+
+    myexp = Experiment(model, myenv, "CMU Gym Cartpole")
+    myexp.start("cmu_cartpole") # appends to a log file
+    myexp.run(10, 195) #if no cycles provided, env determines end state
+    myexp.stop() #closes log file
+    #myexp.report()
+
+
+def test_soar_counting():
+
+    # test CMU ACT-R Counting
+
+    factory = soar_factory.SoarFactory()
+    #modelFile = model_switch.get(arch)  # TODO: load from experiment config
+    model = factory.createModel()
+
+    model.load("soar_agent.config")
+
+    myenv = SimpleEnvironment("counting")
+
+    myexp = Experiment(model, myenv, "Soar Counting")
+    myexp.start("soar_counting") # appends to a log file
+    #myexp.run(12)
+    myexp.run(1, 12)
+    myexp.stop() #closes log file
+
+
+
+def test_soar_cartpole():
+
+    # test CMU ACT-R Counting
+    factory = soar_factory.SoarFactory()
+    model = factory.createModel()
+
+    model.load("cart-pole.soar","cart-pole")
+
+    myenv = GymEnvironment("CartPole-v0") #TODO: pass registered gym.env_id??
+
+    myexp = Experiment(model, myenv, "Soar Gym Cartpole")
+    myexp.start("soar_cartpole") # appends to a log file
+    myexp.run(50, 195) #if no cycles provided, env determines end state
+    myexp.stop() #closes log file
+    #myexp.report()
+
+def test_ccm_counting():
+
+    # test CMU ACT-R Counting
+    factory = ccm_factory.CcmFactory()
+    model = factory.createModel()
+    model.load('metaverse.architectures.actr_ccmsuite.counting_prods')
+    model.working.addWME('add 5 2 count:None sum:None')
+
+    #TODO: move these to a config file
+    model.declarative.addWME('count 0 1')
+    model.declarative.addWME('count 1 2')
+    model.declarative.addWME('count 2 3')
+    model.declarative.addWME('count 3 4')
+    model.declarative.addWME('count 4 5')
+    model.declarative.addWME('count 5 6')
+    model.declarative.addWME('count 6 7')
+    model.declarative.addWME('count 7 8')
+
+    myenv = SimpleEnvironment("counting")
+
+    myexp = Experiment(model, myenv, "CMU Counting")
+    myexp.start("ccm_count_test") # appends to a log file
+    myexp.run(1, 10)
+    myexp.stop() #closes log file
+    # myexp.report()
+
+def test_ccm_cartpole():
+
+    # test CMU ACT-R Counting
+    factory = ccm_factory.CcmFactory()
+    model = factory.createModel()
+
+    model.load('metaverse.architectures.actr_ccmsuite.cartpole_prods')
+
+    myenv = GymEnvironment("CartPole-v0") #TODO: pass registered gym.env_id??
+
+    myexp = Experiment(model, myenv, "CCM Gym Cartpole")
+    myexp.start("ccm_cartpole") # appends to a log file
+    myexp.run(10, 195) #if no cycles provided, env determines end state
+    myexp.stop() #closes log file
 
 
 if __name__ == '__main__':
+
+    logging.config.dictConfig(dictLogConfig)
+    logger = logging.getLogger("metaDemo")
+
+    logger.info("------ Program started -------")
+    logger.info("Done!")
 
     # prompt = MyPrompt()
     # prompt.prompt = 'Thesis> '
     # prompt.cmdloop('Starting Metaverse prompt...')
 
-    prompt = MyPrompt()
-    prompt.do_demo()
-    #print(os.environ['PYTHONPATH'])
-    #for l in sys.path:
-#        print(l)
+    # prompt = MyPrompt()
+    # prompt.do_demo()
 
-
-    # myexp = Experiment()
+    #myexp = Experiment()
     # myexp.run_all()
 
+    #----------------------------------------
+    #           CMU ACT-R Tests
+    # ----------------------------------------
+
+    # print("*** START CMU COUNTING ***")
+    # time.sleep(1)
+    # test_cmu_counting()
+    # time.sleep(1)
+    #
+    # print("*** START CMU CARTPOLE ***")
+    # time.sleep(1)
+    # test_cmu_cartpole()
+    # time.sleep(1)
+
+    print("*** START CMU StarCraft ***")
+    time.sleep(1)
+    test_cmu_starcraft()
+    time.sleep(1)
 
 
+    # ----------------------------------------
+    #           Soar Tests
+    # ----------------------------------------
+
+    # print("*** START SOAR COUNTING ***")
+    # time.sleep(1)
+    # test_soar_counting()
+    # time.sleep(1)
+
+    # print("*** START Soar CARTPOLE ***")
+    # time.sleep(1)
+    # test_soar_cartpole()
+    # time.sleep(1)
+
+    # ----------------------------------------
+    #           CCMSuite3 ACT-R Tests
+    # ----------------------------------------
+
+    # print("*** START CCMSuite3 COUNTING ***")
+    # time.sleep(1)
+    # test_ccm_counting()
+    # time.sleep(1)
+
+    # print("*** START CCMSuite3 CartPole ***")
+    # time.sleep(1)
+    # test_ccm_cartpole()
+    # time.sleep(1)

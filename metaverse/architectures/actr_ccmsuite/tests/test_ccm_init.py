@@ -25,14 +25,17 @@ class MyEnvironment(ccm.Model):
 
 if __name__ == "__main__":
 
-    test_agent = Agent()
+
+    model = Agent()
+    model.goal.set('add 5 2 count:None sum:None')
+    model.run()
 
     empty_environment = MyEnvironment()
+    empty_environment.agent = model
 
-    empty_environment.agent = test_agent
+    # ccm.log_everything(empty_environment)
+    ccm.log_everything(model)
 
-    ccm.log_everything(empty_environment)
+    # empty_environment.run()
 
-    empty_environment.run()
-
-    ccm.finished()
+    # ccm.finished()

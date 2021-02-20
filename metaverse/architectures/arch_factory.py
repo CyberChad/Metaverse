@@ -7,6 +7,7 @@ import subprocess
 import time
 import psutil
 import os
+import metaverse.architectures.arch_factory as this
 
 from pysc2.agents import base_agent
 from pysc2.agents.base_agent import actions
@@ -164,22 +165,7 @@ class AbstractMotor(ABC):
         """
         pass
 
-# ************************* Client Code ***********
 
-def createModel(factory: AbstractFactory) -> None:
-    """
-    The client code works with factories and products only through abstract
-    types: AbstractFactory and AbstractProduct. This lets you pass any factory
-    or product subclass to the client code without breaking it.
-    """
-    model = factory.createModel()
-
-    working_memory = factory.createWorkingMemory()
-
-    print(f"{working_memory.addWME()}")
-    print(f"{working_memory.removeWME(model)}", end="")
-
-#*************************** END OF EXAMPLE **************
 
 class Arch(object):
     """The main MetaMind Architecture class. It encapsulates a cognitive architecture
@@ -220,18 +206,43 @@ class Architectures:
         self.cogArchConfig = cogArchConfig #holds the configuration file
 
 
+# ************************* Client Code Test ***********
+
+class Fucker():
+
+    def __init__(self):
+        pass
+
+    def createModel(self, factory: AbstractFactory) -> None:
+        """
+        The client code works with factories and products only through abstract
+        types: AbstractFactory and AbstractProduct. This lets you pass any factory
+        or product subclass to the client code without breaking it.
+        """
+        self.model = factory.createModel()
+
+        working_memory = factory.createWorkingMemory()
+
+        print(f"{working_memory.addWME()}")
+        print(f"{working_memory.removeWME(self.model)}", end="")
+
+#*************************** END OF EXAMPLE **************
 
 if __name__ == "__main__":
     """
     The client code can work with any concrete factory class.
     """
+    import metaverse.architectures.actr_cmu.cmuactr_factory as cmu
+    import metaverse.architectures.soar.soar_factory as soar
+
+
     print("Client: Testing client code with the first factory type:")
-    client_code(CmuActrFactory())
+    Fucker.createModel(cmu.CmuActrFactory())
 
     print("\n")
 
     print("Client: Testing the same client code with the second factory type:")
-    client_code(SoarFactory())
+    Fucker.create_model(soar.SoarFactory())
 
 
 

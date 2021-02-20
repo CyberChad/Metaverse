@@ -37,7 +37,6 @@ class XMLParser():
             for subelem in elem:
                 print(subelem.text)
 
-
 if __name__ == '__main__':
 
     testfile = 'Counting.metamind'

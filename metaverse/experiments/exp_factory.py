@@ -12,7 +12,7 @@ import sys
 
 import metaverse
 import metaverse.architectures.arch_factory as arch_factory
-import metaverse.architectures.actr_cmu.actr_cmu_factory as cmu_factory
+import metaverse.architectures.actr_cmu.cmuactr_factory as cmu_factory
 
 _DEBUG = True
 
@@ -50,11 +50,20 @@ class AbstractExperiment(ABC):
         """Logic to clean up the experimental parameters"""
         pass
 
+    @abstractmethod
+    def report(self):
+        """General metrics from model and environment"""
+        pass
+
 import metaverse.utils.loggers as log
 import metaverse.architectures as architectures
 
 
 class Experiment(AbstractExperiment):
+    """Experiment class handles interaction between Model and Environment.
+
+    """
+
 
     def __init__(self, model, env, name=""):
 
@@ -63,7 +72,7 @@ class Experiment(AbstractExperiment):
         self.env = env
 
         if _DEBUG:
-            print(f"Model: {model}")
+            print(f"Agent: {model}")
             print(f"Environment: {env}")
 
         # Need Try/Catch since architecture and environment are mandatory
@@ -87,19 +96,103 @@ class Experiment(AbstractExperiment):
         print(f"Saving experiment to: {self.filename}")
 
 
-    def start(self, filename):
+    def start(self, filename,dir=DIR_PATH+"/results/"):
         """Start transcript, appending print output to given filename"""
-        sys.stdout = log.Transcript(filename)
+        time = get_timestr()
+        self.outfile = dir+filename+"_"+time+".log"
+        print(f"Logging experiment to {self.outfile}")
+        sys.stdout = log.Transcript(self.outfile)
 
-    def stop():
+    def stop(self):
         """Stop transcript and return print functionality to normal"""
+        self.model.shutdown()
+        print(f"Shutting down experiment at {self.outfile}")
+
+        self.env.close()
+
         sys.stdout.logfile.close()
         sys.stdout = sys.stdout.terminal
 
-    def run(self, steps=1):
 
-        result = self.model.run(steps)
-        print(result)
+    def run(self, maxtrials=1, maxsteps=-1, asynch=False):
+        """Running experiments go through six (6) steps:
+            1: get state from environment
+            2: present state to agent perception
+            3: trigger cognitive cycle in agent
+            4: get motor action from agent
+            5: present motor action to environment
+            6: trigger cycle in environment
+        """
+
+
+
+        print(f"Starting Experiment with {maxtrials} trials of {maxsteps} steps each.")
+
+        # 1: get state from environment to initialize
+        self.obs = self.env.getLastObservation()
+        self.model.perception.update_model_action(self.obs)
+        #print(f"Experiment:run() sees :{self.obs}")
+
+        import subprocess
+        import threading
+
+        if asynch: #run asynchronously
+            pass
+            #agent_thread = subprocess.Popen(self.agent.run(100, True))
+        step = 0
+        trial = 0
+
+        #self.agent.run()
+
+        while step != maxsteps and trial < maxtrials:
+            #check to see if environment is done
+            while not self.env.done:
+                print(f"step: {step}")
+                #2: present state to agent perception as self.obs
+                self.model.last_observation = self.obs
+                #3: trigger cognitive cycle in agent
+                self.model.step()
+                #4: get motor action from agent
+                self.next_action = self.model.motor.next_action
+                #print(f"Experiment:run() does :{self.next_action}")
+                #5: present motor action to environment
+                # if self.next_action:
+                self.env.next_action = self.next_action
+                #6: trigger cycle in environment
+                self.env.step()
+                # 1: get state from environment to
+                # time.sleep(0.05)
+                self.obs = self.env.getLastObservation()
+                #print(f"Experiment:run() sees :{self.obs}")
+                self.model.perception.update_model_action(self.obs)
+                step = step + 1
+                time.sleep(0.25)
+
+            else: #environment in solved state; reset
+                trial = trial + 1
+                print(f"Trial {trial}, Number of steps {step}")
+                step = 0
+                self.env.reset()
+                self.obs = self.env.getLastObservation()
+                #self.agent.reset()
+                self.model.perception.update_model_action(self.obs)
+                self.model.step()
+
+    def report(self):
+        """define some kind of pretty print report on all the stats.
+
+            Inputs: choice of reports to generate
+
+            Outputs: pretty print output of reports, or raw logs
+                - Environment: TBD
+                - Model: TBD
+                - Stats: TBD
+        """
+
+        print(f"Reporting on outfile: {self.outfile}")
+        parser = log.Parser(self.outfile)
+        parser.importACTR()
+
 
 def get_timestr():
     """get_timestr() returns a formatted date-time stamp for incremental log files."""
