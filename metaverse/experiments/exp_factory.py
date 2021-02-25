@@ -64,19 +64,38 @@ class Experiment(AbstractExperiment):
 
     """
 
-
-    def __init__(self, model, env, name=""):
+    def __init__(self, model, env, name="", map=None):
 
         self.name = name
         self.model = model
         self.env = env
 
+        self.model.env = self.env
+        self.env.model = self.model
+
+
+        # TODO: Need Try/Catch since architecture and environment are mandatory;
+        #  should fail if either are None
+
         if _DEBUG:
             print(f"Agent: {model}")
             print(f"Environment: {env}")
 
-        # Need Try/Catch since architecture and environment are mandatory
-        # fails if either are None
+        observation_space = self.env.getObservationSpace()
+        print(f"Observation space: {observation_space}")
+
+        action_space = self.env.getActionSpace()
+        print(f"Action space: {action_space}")
+
+        # TODO: try if env is GymEnv
+
+        if observation_space is not None:
+            self.model.perception.setObservationSpace(observation_space)
+        if action_space is not None:
+            self.model.motor.setActionSpace(action_space)
+        if map is not None:
+            self.model.perception.obs_map = map
+
 
     def load(self, filename=""):
         """Load the parameters from a json file"""
@@ -124,8 +143,6 @@ class Experiment(AbstractExperiment):
             6: trigger cycle in environment
         """
 
-
-
         print(f"Starting Experiment with {maxtrials} trials of {maxsteps} steps each.")
 
         # 1: get state from environment to initialize
@@ -166,7 +183,7 @@ class Experiment(AbstractExperiment):
                 #print(f"Experiment:run() sees :{self.obs}")
                 self.model.perception.update_model_action(self.obs)
                 step = step + 1
-                time.sleep(0.25)
+                time.sleep(0.1)
 
             else: #environment in solved state; reset
                 trial = trial + 1

@@ -218,160 +218,103 @@ class SoarFactory(AbstractFactory):
 #        Implemented Products
 # ********************************************
 
-def create_kernel():
-    kernel = sml.Kernel.CreateKernelInCurrentThread()
-    if not kernel or kernel.HadError():
-        print("Error creating kernel: " + kernel.GetLastErrorDescription())
-        exit(1)
-    return kernel
-
-
-def create_agent(kernel, name):
-    agent = kernel.CreateAgent("agent")
-    if not agent:
-        print("Error creating agent: " + kernel.GetLastErrorDescription())
-        exit(1)
-    return agent
-
-
-def parse_output_commands(agent, structure):
-    commands = {}
-    mapping = {}
-    for cmd in range(0, agent.GetNumberCommands()):
-        error = False
-        command = agent.GetCommand(cmd)
-        cmd_name = command.GetCommandName()
-        if cmd_name in structure:
-            parameters = {}
-            for param_name in structure[cmd_name]:
-                param_value = command.GetParameterValue(param_name)
-                if param_value:
-                    parameters[param_name] = param_value
-            if not error:
-                commands[cmd_name] = parameters
-                mapping[cmd_name] = command
-        else:
-            error = True
-        if error:
-            command.AddStatusError()
-    return commands, mapping
-
-
-# callback registry
 
 def register_print_callback(kernel, agent, function, user_data=None):
     agent.RegisterForPrintEvent(sml.smlEVENT_PRINT, function, user_data)
 
 
-def get_move_command(agent):
-    output_command_list = {'move-cart': ['direction']}
-    # Maps to: (<s> ^output-cmd <output-cmd>) // (<output-cmd> ^direction <dir>)
-
-    if agent.Commands():
-        (commands, mapping) = parse_output_commands(agent, output_command_list)
-
-        move_cart_cmd = commands['move-cart']
-        direction = move_cart_cmd['direction']
-
-        mapping['move-cart'].CreateStringWME('status', 'complete')
-
-        if direction == 'left':
-            move_cmd = 0
-        else:
-            move_cmd = 1
-
-        print("Soar agent key press: " + str(move_cmd))
-        return move_cmd
-
-    return None
-
-
 def callback_print_message(mid, user_data, agent, message):
     print(message.strip())
-
-
-def create_input_wmes(agent):
-    gym_id = agent.GetInputLink().CreateIdWME('gym')
-    cart_pos = gym_id.CreateFloatWME('cart-position', 0.)
-    cart_vel = gym_id.CreateFloatWME('cart-velocity', 0.)
-    pole_pos = gym_id.CreateFloatWME('pole-angle', 0.)
-    pole_vel = gym_id.CreateFloatWME('pole-tip-velocity', 0.)
-
-    return (cart_pos, cart_vel, pole_pos, pole_vel)
-
-
-def update_input_wmes(observation):
-    global input_wmes
-
-    (cart_pos, cart_vel, pole_pos, pole_vel) = input_wmes
-
-    cart_pos.Update(observation[0])
-    cart_vel.Update(observation[1])
-    pole_pos.Update(observation[2])
-    pole_vel.Update(observation[3])
-
 
 class SoarModel(AbstractModel):
 
 
     def __init__(self):
         print("SoarModel().__init__(self)")
-        self.working = SoarWorkingMemory()
-        self.declarative = SoarDeclarativeMemory()
-        self.procedural = SoarProceduralMemory()
-        self.perception = SoarPerception()
-        self.motor = SoarMotor()
+        self.working = SoarWorkingMemory(self)
+        self.declarative = SoarDeclarativeMemory(self)
+        self.procedural = SoarProceduralMemory(self)
+        self.perception = SoarPerception(self)
+        self.motor = SoarMotor(self)
 
+    def create_kernel(self):
+        kernel = sml.Kernel.CreateKernelInCurrentThread()
+        if not kernel or kernel.HadError():
+            print("Error creating kernel: " + kernel.GetLastErrorDescription())
+            exit(1)
+        return kernel
 
-    def load(self, modelFile="soar_agent.config", connector="psych") -> str:
+    def create_agent(self, kernel, name):
+        agent = kernel.CreateAgent("agent")
+        if not agent:
+            print("Error creating agent: " + kernel.GetLastErrorDescription())
+            exit(1)
+        return agent
 
-        self.config_path = "architectures/soar/tests/"+connector+"/"+modelFile
+    def load(self, modelFile="soar_agent.config", adapter="psych") -> str:
+
+        self.config_path = "architectures/soar/tests/"+adapter+"/"+modelFile
         print(f"loading soar model from: {self.config_path}")
 
         global input_wmes
-        self.connector = connector
+        self.adapter = adapter
 
-        if connector == "psych": #Uses new AgentConnector
+        if adapter == "psych": #Uses new AgentConnector
 
             self.agent = SoarAgent(config_filename=self.config_path, write_to_stdout=True)
             self.modelFile = modelFile
 
-            connector_switch = {
-                "psych": SimpleConnector(self.agent),
-                "cart-pole": GymConnector(self.agent, self.motor, self.perception)
-            }
+            # connector_switch = {
+            #     "psych": SimpleConnector(self.agent),
+            #     "cart-pole": GymConnector(self.agent, self.motor, self.perception)
+            # }
 
-            self.agent.add_connector(connector, connector_switch[connector])
+            self.agent.add_connector(adapter, SimpleConnector(self.agent))
             self.agent.connect()
 
-        elif connector == "cart-pole":
-            self.kernel = create_kernel()
-            self.agent = create_agent(self.kernel, "agent")
+        elif adapter == "cart-pole":
+            self.kernel = self.create_kernel()
+            self.agent = self.create_agent(self.kernel, "agent")
             register_print_callback(self.kernel, self.agent, callback_print_message, None)
-            input_wmes = create_input_wmes(self.agent)
+
+            #TODO: move this to config file
+            map = ['cart-position', 'cart-velocity', 'pole-angle', 'pole-tip-velocity']
+            self.perception.create_input_wmes(self.agent, map)
+
             print(self.agent.ExecuteCommandLine("source architectures/soar/tests/cart-pole/cart-pole.soar"))
 
+        elif adapter == "starcraft":
+            self.kernel = self.create_kernel()
+            self.agent = self.create_agent(self.kernel, "agent")
+            register_print_callback(self.kernel, self.agent, callback_print_message, None)
+            map = ['beacon_x', 'beacon_y']
+            self.perception.create_input_wmes(self.agent, map)
+            print(self.agent.ExecuteCommandLine("source architectures/soar/tests/StarCraft2/starcraft2.soar"))
+
         else: #shouldn't be here!
-            print(f"ERROR: Couldn't find connector {connector}")
-
-
-
+            print(f"ERROR: Couldn't find adapter {adapter}")
 
         return "The result of SoarModel:create()"
+
+
 
     def step(self) -> str:
         # self.agent.execute_command("print --depth 3 s1")
         # self.agent.execute_command("print --depth 3 i2")
         # self.agent.execute_command("print --depth 3 i3")
 
+        #TODO: call update() for each registered module
 
-
-        if self.connector == "psych":
+        if self.adapter == "psych":
             self.agent.execute_command("run 1")  # runs for 1 decision cycles
-        if self.connector == "cart-pole":
-            update_input_wmes(self.perception.observation)
-            self.kernel.RunAllAgents(1)
-            move_cmd = get_move_command(self.agent)
+
+        #if self.connector == "cart-pole":
+        else:
+            #self.update_input_wmes(self.perception.observation)
+            self.kernel.RunAllAgents(1) #run for one decision cycle
+
+            #TODO: move this to motor.update()
+            move_cmd = self.motor.get_move_command(self.agent, self.adapter)
             if move_cmd is not None:
                 self.motor.next_action = move_cmd
 
@@ -388,19 +331,19 @@ class SoarModel(AbstractModel):
 
     def shutdown(self) -> str:
 
-        if self.connector == "psych":
+        if self.adapter == "psych":
             self.agent.kill()
         else:
             self.kernel.DestroyAgent(self.agent)
             self.kernel.Shutdown()
             del self.kernel
 
-
         return "The result of SoarModel:shutdown()"
 
-
-
 class SoarWorkingMemory(AbstractWorkingMemory):
+
+    def __init__(self, model=None):
+        self.model = model
 
     def addWME(self) -> str:
         return "The result of SoarWorkingMemory:addWME()."
@@ -415,6 +358,9 @@ class SoarWorkingMemory(AbstractWorkingMemory):
         return f"The result of the Soar WorkingMemory collaborating with the ({result})"
 
 class SoarDeclarativeMemory(AbstractWorkingMemory):
+
+    def __init__(self, model=None):
+        self.model = model
 
     def addWME(self) -> str:
         return "The result of CmuACTrWorkingMemory:addWME()."
@@ -433,6 +379,9 @@ class SoarDeclarativeMemory(AbstractWorkingMemory):
 
 class SoarProceduralMemory(AbstractProceduralMemory):
 
+    def __init__(self, model=None):
+        self.model = model
+
     def addPM(self) -> str:
         return "The result of CmuACTrWorkingMemory:addWME()."
 
@@ -444,27 +393,43 @@ class SoarProceduralMemory(AbstractProceduralMemory):
 
 class SoarPerception(AbstractPerception):
 
-
-    def __init__(self):
+    def __init__(self, model=None):
+        self.model = model
         self.observation = [0,0,0,0]
+        self.input_wmes = ()
+
+    def create_input_wmes(self, agent, map=None):
+        self.agent = agent
+        gym_id = self.agent.GetInputLink().CreateIdWME('gym')
+
+        self.input_wmes = []
+
+        if map is not None:
+            print("SoarPerception:create_input_wmes()")
+            for ix in range(0,len(map)):
+                wme_name = map[ix]
+                print(f"wme_name: {wme_name}")
+                wm_element = gym_id.CreateFloatWME(wme_name, 0.)
+                self.input_wmes.append(wm_element)
+
+    def update_input_wmes(self, observation):
+
+        #global input_wmes
+
+        if observation is not None:
+            self.observation = observation
+            print(f"observation: {observation}")
+            print(f"obs length: {len(observation)}")
+            for ix in range(0,len(observation)):
+                self.input_wmes[ix].Update(observation[ix])
 
     def update_model_action(self, obs):
         print(f"Perception():update_model_action: {obs}")
 
         self.observation = obs
 
-        # global input_wmes
-        # (cart_pos, cart_vel, pole_pos, pole_vel) = input_wmes
-        #
-        # #TODO: move this to WorkingMemory
-        #
-        # cart_pos.Update(obs[0])
-        # cart_vel.Update(obs[1])
-        # pole_pos.Update(obs[2])
-        # pole_vel.Update(obs[3])
-
-        # self.input_wmes = create_input_wmes(agent)
-        # update_input_wmes(observation)
+        if obs is not None:
+            self.update_input_wmes(self.observation)
 
 
     def addPerception(self) -> str:
@@ -476,9 +441,20 @@ class SoarPerception(AbstractPerception):
     argument.
     """
 
+    def setObservationSpace(self, map=None):
+
+        self.obs_map = []
+
+        if map is not None:
+            self.obs_map = map
+        else:
+            for i in range(self.observation_shape):
+                self.obs_map += f"obs_{i}"
+
 class SoarMotor(AbstractMotor):
 
-    def __init__(self):
+    def __init__(self, model=None):
+        self.model = model
         self.next_action=0
 
     def addMotor(self) -> str:
@@ -489,3 +465,64 @@ class SoarMotor(AbstractMotor):
     ACTr Model. Nevertheless, it accepts any instance of AbstractModel as an
     argument.
     """
+
+    def setActionSpace(self, space):
+        self.action_space = space
+
+    def parse_output_commands(self, agent, structure):
+        commands = {}
+        mapping = {}
+        for cmd in range(0, agent.GetNumberCommands()):
+            error = False
+            command = agent.GetCommand(cmd)
+            cmd_name = command.GetCommandName()
+            if cmd_name in structure:
+                parameters = {}
+                for param_name in structure[cmd_name]:
+                    param_value = command.GetParameterValue(param_name)
+                    if param_value:
+                        parameters[param_name] = param_value
+                if not error:
+                    commands[cmd_name] = parameters
+                    mapping[cmd_name] = command
+            else:
+                error = True
+            if error:
+                command.AddStatusError()
+        return commands, mapping
+
+        # callback registry
+
+    def get_move_command(self, agent, adapter):
+
+        output_command_list = {}
+
+        if adapter == 'cart-pole':
+            output_command_list = {'move-cart': ['direction']}
+        elif adapter == 'starcraft':
+            output_command_list = {'move-marine': ['location']}
+            move_cmd = self.model.perception.observation
+            return move_cmd
+        else: #shouldn't be here!!
+            print("Error: invalid motor adapter")
+        # Maps to: (<s> ^output-cmd <output-cmd>) // (<output-cmd> ^direction <dir>)
+
+        if agent.Commands():
+            (commands, mapping) = self.parse_output_commands(agent, output_command_list)
+            print(f"commands: {commands}")
+            print(f"mapping: {mapping}")
+
+            move_cart_cmd = commands['move-cart']
+            direction = move_cart_cmd['direction']
+
+            mapping['move-cart'].CreateStringWME('status', 'complete')
+
+            if direction == 'left':
+                move_cmd = 0
+            else:
+                move_cmd = 1
+
+            print("Soar agent key press: " + str(move_cmd))
+            return move_cmd
+
+        return None

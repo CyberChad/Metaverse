@@ -2,7 +2,8 @@
 
 (define-model sc2beacons
   ;; do not change these parameters
-  (sgp :esc t :bll .5 :ol t :er t :lf 0)
+  ;;(sgp :esc t :bll .5 :ol t :er t :lf 0 :trace-detail high)
+  (sgp :esc t :lf .05 :trace-detail high)
 
   ;; adjust these as needed
   (sgp :v nil :ans .2 :mp 10.0 :rt -60)
@@ -70,8 +71,6 @@
    +visual>
       isa        move-attention
       screen-pos =visual-location)
-
-
 
   (p find-beacon
    =goal>

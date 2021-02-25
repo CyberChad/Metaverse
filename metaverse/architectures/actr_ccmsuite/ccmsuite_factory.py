@@ -12,7 +12,7 @@ from metaverse.architectures.arch_factory import \
     AbstractPerception,\
     AbstractMotor
 
-import ccm as ccm
+import ccm
 import ccm.lib.actr as actr
 from ccm.lib.actr import *
 import metaverse.architectures.actr_ccmsuite as ccmsuite
@@ -90,7 +90,7 @@ class CCMAgent(ACTR): #TODO: move this to external model file
 
 class MyEnvironment(ccm.Model):
 
-    key = 0
+    key = None #gym_env interprets this as NO_OP (no operation)
 
     def key_pressed(self, key):
         self.key = key
@@ -101,7 +101,7 @@ class Model(AbstractModel):
 
     def __init__(self):
         print(f"Model:__init__()")
-        self.env = MyEnvironment()
+        self.ccm_env = MyEnvironment()
 
 
         #(sgp :esc t:lf .05:trace-detail high)
@@ -120,7 +120,7 @@ class Model(AbstractModel):
             setattr(CCMAgent, f'{name}', x[1])
 
         self.agent = CCMAgent()
-        self.env.agent = self.agent
+        self.ccm_env.agent = self.agent
 
         # self.load(self)
 
@@ -128,11 +128,10 @@ class Model(AbstractModel):
         self.working = WorkingMemory(self.agent)
         self.declarative = DeclarativeMemory(self.agent)
         self.procedural = ProceduralMemory(self.agent)
-        self.motor = Motor(self.env)
+        self.motor = Motor(self.ccm_env)
         # generate a default file
 
         #set default options
-
 
         ccm.log_everything(self.agent)
 
@@ -146,7 +145,7 @@ class Model(AbstractModel):
     def step(self) -> str:
 
         # self.agent.run(0.05)
-        self.env.run(0.05)
+        self.ccm_env.run(0.05)
         # next_action = self.agent.next_action
         # self.motor.next_action = next_action
         next_action = self.motor.update()
@@ -250,6 +249,46 @@ class Perception(AbstractPerception):
     argument.
     """
 
+    def transduce(self, obs):
+
+        chunks = ""
+        # TODO: read these from a config file for different environments
+        #chunknames = ['cart_pos', 'cart_vel', 'pole_pos', 'pole_vel']
+        # these aren't strictly necessary for CCMSuite
+
+        num_features = 0
+
+        if self.obs_map is not None:
+            num_features = len(self.obs_map)
+        else:
+            num_features = self.observation_shape
+
+        print(f"num features: {num_features}")
+        #chunks.append(chunknames[0])
+        chunks += f"{obs[0]}"
+
+        for i in range(1, num_features):
+            #chunks.append(chunknames[i])
+            chunks += f" {obs[i]}"
+
+        print(f"Transduction: {chunks}")
+
+        return chunks
+
+    def setObservationSpace(self, space, map=None):
+        self.observation_space = space
+
+        #transduce the shape size into state space
+        self.observation_shape = space.shape[0]
+
+        self.obs_map = []
+
+        if map is not None:
+            self.obs_map = map
+        else:
+            for i in range(self.observation_shape):
+                self.obs_map += f"obs_{i}"
+
     def update_model_action(self, obs):
 
         self.last_obs = obs
@@ -257,45 +296,25 @@ class Perception(AbstractPerception):
 
         if obs is not None:
             self.last_obs = obs
-            temp = f"{obs[0]} {obs[1]} {obs[2]} {obs[3]}"
+
+            temp = self.transduce(obs)
             print("Updating perceptual buffer: "+temp)
-            temp2 = "play pole:?0 pole:?1 cart:?2 cart:?3"
             self.agent.perception.set(temp)
-
-            # # if goal buffer has been defined, RPC mod-focus to update chunks
-            # if cmuactr.buffer_read('goal'):
-            #     print("mod_focus")
-            #     cmuactr.mod_focus('cart_pos', obs[0], 'cart_vel', obs[1], 'pole_pos',
-            #                    obs[2], 'pole_vel', obs[3])
-            #
-            # # otherwise init goal with current observation
-            # else:
-            #     print("goal_focus")
-            #     cmuactr.goal_focus(cmuactr.define_chunks(['isa', 'game-state', 'cart_pos', obs[0],
-            #                                         'cart_vel', obs[1], 'pole_pos', obs[2], 'pole_vel', obs[3],
-            #                                         'state', 'start'])[0])
-
-            pass
-
-        #global model_action
-        #model_action = 0  # replace with action space
-
-        #global running
-
-        #print("act-r running: " + str(running))
-        #cmuactr.run(5)
-        #return model_action
-
 
 class Motor(AbstractMotor):
 
     model_action = None
     human_action = None
 
-    def __init__(self, env):
-        self.env = env
-        self.next_action = 0
+    def __init__(self, ccm_env, default=None):
+        self.ccm_env = ccm_env
+        #self.next_action = 0
+
+        self.next_action = default #NO_OP test for SC
         print(f"Initializing Motor Module...")
+
+    def setActionSpace(self, space):
+        self.action_space = space
 
     def addMotor(self) -> str:
         return "The result of CmuACTrWorkingMemory:addWME()."
@@ -309,7 +328,7 @@ class Motor(AbstractMotor):
     def update(self):
         # next_action = self.agent.motor.get()
 
-        key = self.env.key
+        key = self.ccm_env.key
         if key is not None:
             print(f"Motor():update key to {key}")
             self.next_action = key

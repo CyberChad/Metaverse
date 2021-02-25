@@ -26,7 +26,7 @@ import metaverse.architectures.actr_cmu.cmuactr_factory as cmu_factory
 import metaverse.architectures.soar.soar_factory as soar_factory
 import metaverse.architectures.actr_ccmsuite.ccmsuite_factory as ccm_factory
 
-from metaverse.environments.env_factory import SimpleEnvironment, GymEnvironment
+from metaverse.environments.env_factory import SimpleEnvironment, GymEnvironment, StarCraftEnvironment
 
 from metaverse.experiments import *
 
@@ -264,6 +264,9 @@ class MyPrompt(Cmd):
                     print(f"Running {arch} on {test} test.")
                     #TODO: call to experiment
 
+# --------------------------
+#       CMU ACT-R Tests
+# --------------------------
 def test_cmu_counting():
 
     # test CMU ACT-R Counting
@@ -279,7 +282,6 @@ def test_cmu_counting():
     myexp.stop() #closes log file
     # myexp.report()
 
-
 def test_cmu_cartpole():
 
     # test CMU ACT-R Counting
@@ -288,11 +290,16 @@ def test_cmu_cartpole():
 
     model.load("/tests/gym/cartpole.lisp")
 
+    map = ['cart_pos', 'cart_vel', 'pole_pos', 'pole_vel']
+    #model.perception.setObservationSpace(map)
+
     myenv = GymEnvironment("CartPole-v0") #TODO: pass registered gym.env_id??
 
-    myexp = Experiment(model, myenv, "CMU Gym Cartpole")
+    model.motor.next_action = 0
+
+    myexp = Experiment(model, myenv, "CMU Gym Cartpole", map)
     myexp.start("cmu_cartpole") # appends to a log file
-    myexp.run(10, 195) #if no cycles provided, env determines end state
+    myexp.run(1, 195) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
     #myexp.report()
 
@@ -301,17 +308,24 @@ def test_cmu_starcraft():
     # test CMU ACT-R Counting
     factory = cmu_factory.CmuActrFactory()
     model = factory.createModel()
+    map = ['beacon_x', 'beacon_y']
+    #model.perception.setObservationSpace(map)
 
-    model.load("/tests/gym/cartpole.lisp")
+    model.load("/tests/sc2/gym_sc2-beacons-simple.lisp")
 
-    myenv = GymEnvironment("CartPole-v0") #TODO: pass registered gym.env_id??
+    myenv = StarCraftEnvironment("SC2MoveToBeacon-v1")
+    myexp = Experiment(model, myenv, "CMU StarCraft Beacons",map)
 
-    myexp = Experiment(model, myenv, "CMU Gym Cartpole")
-    myexp.start("cmu_cartpole") # appends to a log file
-    myexp.run(10, 195) #if no cycles provided, env determines end state
+    model.motor.next_action = [-1, -1]
+
+    myexp.start("cmu_beacons") # appends to a log file
+    myexp.run(1, 500) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
     #myexp.report()
 
+# --------------------------
+#       Soar Tests
+# --------------------------
 
 def test_soar_counting():
 
@@ -331,23 +345,46 @@ def test_soar_counting():
     myexp.run(1, 12)
     myexp.stop() #closes log file
 
-
-
 def test_soar_cartpole():
 
     # test CMU ACT-R Counting
     factory = soar_factory.SoarFactory()
     model = factory.createModel()
 
+
     model.load("cart-pole.soar","cart-pole")
 
     myenv = GymEnvironment("CartPole-v0") #TODO: pass registered gym.env_id??
 
     myexp = Experiment(model, myenv, "Soar Gym Cartpole")
+    model.perception.create_input_wmes
+
     myexp.start("soar_cartpole") # appends to a log file
-    myexp.run(50, 195) #if no cycles provided, env determines end state
+    myexp.run(3, 195) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
     #myexp.report()
+
+def test_soar_starcraft():
+
+    # test CMU ACT-R Counting
+    factory = soar_factory.SoarFactory()
+    model = factory.createModel()
+
+    model.load("starcraft2.soar","starcraft")
+
+    myenv = StarCraftEnvironment("SC2MoveToBeacon-v1")
+    myexp = Experiment(model, myenv, "Soar StarCraft Beacons")
+
+    model.motor.next_action = [-1, -1]
+
+    myexp.start("soar_beacons") # appends to a log file
+    myexp.run(1, 500) #if no cycles provided, env determines end state
+    myexp.stop() #closes log file
+    #myexp.report()
+
+# --------------------------
+#       CCM ACT-R Tests
+# --------------------------
 
 def test_ccm_counting():
 
@@ -385,11 +422,33 @@ def test_ccm_cartpole():
 
     myenv = GymEnvironment("CartPole-v0") #TODO: pass registered gym.env_id??
 
-    myexp = Experiment(model, myenv, "CCM Gym Cartpole")
+    map = ['cart_pos', 'cart_vel', 'pole_pos', 'pole_vel']
+    myexp = Experiment(model, myenv, "CCM Gym Cartpole", map)
+    model.motor.next_action = 0 #TODO: change to random action space
+
     myexp.start("ccm_cartpole") # appends to a log file
     myexp.run(10, 195) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
 
+def test_ccm_starcraft():
+
+    # test CMU ACT-R Counting
+    factory = ccm_factory.CcmFactory()
+    model = factory.createModel()
+    #model.perception = Sc2Perception()
+
+    model.load('metaverse.architectures.actr_ccmsuite.beacon_prods')
+
+    myenv = StarCraftEnvironment("SC2MoveToBeacon-v1")
+    map = ['loc_x', 'loc_y']
+    myexp = Experiment(model, myenv, "CCM StarCraft Beacons", map)
+
+    model.motor.next_action = [-1,-1]  # TODO: change to random action space
+
+    myexp.start("ccm_beacons") # appends to a log file
+    myexp.run(1, 500) #if no cycles provided, env determines end state
+    myexp.stop() #closes log file
+    #myexp.report()
 
 if __name__ == '__main__':
 
@@ -413,46 +472,38 @@ if __name__ == '__main__':
     #           CMU ACT-R Tests
     # ----------------------------------------
 
-    # print("*** START CMU COUNTING ***")
-    # time.sleep(1)
-    # test_cmu_counting()
-    # time.sleep(1)
-    #
-    # print("*** START CMU CARTPOLE ***")
-    # time.sleep(1)
-    # test_cmu_cartpole()
-    # time.sleep(1)
+    print("*** START CMU COUNTING ***")
+    test_cmu_counting()
+
+    print("*** START CMU CARTPOLE ***")
+    test_cmu_cartpole()
 
     print("*** START CMU StarCraft ***")
-    time.sleep(1)
     test_cmu_starcraft()
-    time.sleep(1)
 
 
     # ----------------------------------------
     #           Soar Tests
     # ----------------------------------------
 
-    # print("*** START SOAR COUNTING ***")
-    # time.sleep(1)
-    # test_soar_counting()
-    # time.sleep(1)
+    print("*** START SOAR COUNTING ***")
+    test_soar_counting()
 
-    # print("*** START Soar CARTPOLE ***")
-    # time.sleep(1)
-    # test_soar_cartpole()
-    # time.sleep(1)
+    print("*** START Soar CARTPOLE ***")
+    test_soar_cartpole()
+
+    print("*** START Soar StarCraft ***")
+    test_soar_starcraft()
 
     # ----------------------------------------
     #           CCMSuite3 ACT-R Tests
     # ----------------------------------------
 
-    # print("*** START CCMSuite3 COUNTING ***")
-    # time.sleep(1)
-    # test_ccm_counting()
-    # time.sleep(1)
+    print("*** START CCMSuite3 COUNTING ***")
+    test_ccm_counting()
 
-    # print("*** START CCMSuite3 CartPole ***")
-    # time.sleep(1)
-    # test_ccm_cartpole()
-    # time.sleep(1)
+    print("*** START CCMSuite3 CartPole ***")
+    test_ccm_cartpole()
+
+    print("*** START CCMSuite3 StarCraft ***")
+    test_ccm_starcraft()

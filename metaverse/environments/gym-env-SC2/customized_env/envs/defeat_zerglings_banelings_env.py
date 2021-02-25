@@ -5,6 +5,7 @@ from pysc2.env import sc2_env
 from pysc2.lib import actions, features, units
 import logging
 import numpy as np
+import queue
 
 logger = logging.getLogger(__name__)
 

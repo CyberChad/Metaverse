@@ -65,18 +65,26 @@ class ModelThread(threading.Thread):
 
 class Model(AbstractModel):
 
+    # Create the ACT-R agent
+
+    # add_key_monitor() #TODO hook this up to the SC2 env.ACTIONS
+    # add_mouse_monitor()  # TODO hook this up to the SC2 env.ACTIONS
+
     def __init__(self):
 
         cmuactr.reset()
 
         #self.model_thread = ModelThread()
-        self.perception = Perception()
-        self.working = WorkingMemory()
-        self.declarative = DeclarativeMemory()
-        self.procedural = ProceduralMemory()
-        self.motor = Motor()
+        self.perception = Perception(self)
+        self.working = WorkingMemory(self)
+        self.declarative = DeclarativeMemory(self)
+        self.procedural = ProceduralMemory(self)
+        self.motor = Motor(self)
 
         # generate a default file
+
+        self.window = cmuactr.open_exp_window("Find Beacon")
+        cmuactr.install_device(self.window)
 
         #set default options
 
@@ -121,11 +129,10 @@ class Model(AbstractModel):
         return "The result of CmuActrModel:shutdown()"
 
 
-
 class WorkingMemory(AbstractWorkingMemory):
 
-    def __init__(self):
-        pass
+    def __init__(self, model=None):
+        self.model = model
 
     def addWME(self) -> str:
         return "The result of CmuACTrWorkingMemory:addWME()."
@@ -143,8 +150,8 @@ class WorkingMemory(AbstractWorkingMemory):
 
 class DeclarativeMemory(AbstractWorkingMemory):
 
-    def __init__(self):
-        pass
+    def __init__(self, model=None):
+        self.model = model
 
     def addWME(self) -> str:
         return "The result of CmuACTrWorkingMemory:addWME()."
@@ -163,8 +170,8 @@ class DeclarativeMemory(AbstractWorkingMemory):
 
 class ProceduralMemory(AbstractProceduralMemory):
 
-    def __init__(self):
-        pass
+    def __init__(self, model=None):
+        self.model = model
 
     def addPM(self) -> str:
         return "The result of CmuACTrWorkingMemory:addWME()."
@@ -179,8 +186,54 @@ class Perception(AbstractPerception):
 
     #model_action = 0
 
-    def __init__(self):
-        self.observation = [0,0,0,0]
+    def __init__(self, model):
+        self.observation = []
+        self.model = model
+
+
+    def transduce(self, obs):
+
+        self.last_obs = obs
+        chunks = []
+        #TODO: read these from a config file for different environments
+        #chunknames = ['cart_pos', 'cart_vel', 'pole_pos', 'pole_vel']
+        chunknames = self.obs_map
+
+        num_features = 0
+
+        if self.obs_map is not None:
+            num_features = len(self.obs_map)
+        else:
+            num_features = self.observation_shape
+
+        chunks.append(chunknames[0])
+        chunks.append(obs[0])
+
+        for i in range(1, num_features):
+            chunks.append(chunknames[i])
+            chunks.append(obs[i])
+
+        print(f"Transduction: {chunks}")
+
+        return chunks
+
+    def setObservationSpace(self, map=None):
+        # self.observation_space = space
+        #
+        # #transduce the shape size into state space
+        #
+        # if space is not None:
+        #     self.observation_shape = space
+        # else:
+        #     self.observation_shape = len(map)
+
+        self.obs_map = []
+
+        if map is not None:
+            self.obs_map = map
+        else:
+            for i in range(self.observation_shape):
+                self.obs_map += f"obs_{i}"
 
     def update_model_action(self, obs):
 
@@ -188,26 +241,30 @@ class Perception(AbstractPerception):
 
         if obs is not None:
 
+            #generic logic to present the "screen" to the agent
+            focus_chunks = self.transduce(obs)
+
+            window = self.model.window
+
+            cmuactr.add_text_to_exp_window(window, "B", x=obs[0], y=obs[1])
+
             # if goal buffer has been defined, RPC mod-focus to update chunks
             if cmuactr.buffer_read('goal'):
                 print("mod_focus")
-                cmuactr.mod_focus('cart_pos', obs[0], 'cart_vel', obs[1], 'pole_pos',
-                               obs[2], 'pole_vel', obs[3])
+
+                #cmuactr.mod_focus('cart_pos', obs[0], 'cart_vel', obs[1], 'pole_pos',
+                               #obs[2], 'pole_vel', obs[3])
+                cmuactr.mod_focus(focus_chunks)
             # otherwise init goal with current observation
             else:
                 print("goal_focus")
-                cmuactr.goal_focus(cmuactr.define_chunks(['isa', 'game-state', 'cart_pos', obs[0],
-                                                    'cart_vel', obs[1], 'pole_pos', obs[2], 'pole_vel', obs[3],
-                                                    'state', 'start'])[0])
+                init_focus = ['isa', 'game-state']
+                init_focus += focus_chunks
+                init_focus += ['state', 'start']
 
-        #global model_action
-        #model_action = 0  # replace with action space
+                print(f"Init Focus: {init_focus}")
 
-        #global running
-
-        #print("act-r running: " + str(running))
-        #cmuactr.run(5)
-        #return model_action
+                cmuactr.goal_focus(cmuactr.define_chunks(init_focus)[0])
 
     def addPerception(self, obs) -> str:
         self.obs = obs
@@ -221,6 +278,79 @@ class Perception(AbstractPerception):
     argument.
     """
 
+class Sc2Perception(AbstractPerception):
+    # model_action = 0
+
+    def __init__(self, model):
+        self.observation = []
+        self.model = model
+
+    def transduce(self, obs):
+
+        chunks = []
+
+        chunks.append(f"obs_{0}")
+        chunks.append(obs[0])
+
+        for i in range(1, self.observation_shape + 1):
+            chunks.append(f"obs_{i}")
+            chunks.append(obs[i])
+
+        print(f"Transduction: {chunks}")
+
+        return chunks
+
+    def setObservationSpace(self, map=None):
+        # self.observation_space = space
+        #
+        # # transduce the shape size into state space
+        # if space is not None:
+        #     shape = space.shape[0]
+        #     self.observation_shape = space.shape[0]
+
+        self.obs_map = []
+
+        if map is not None:
+            self.obs_map = map
+        else:
+            for i in range(self.observation_shape):
+                self.obs_map += f"obs_{i}"
+
+    def update_model_action(self, obs):
+
+        print(f"Perception():update_model_action: {obs}")
+
+        if obs is not None:
+
+            # generic logic to present the "screen" to the agent
+            focus_chunks = self.transduce(obs)
+
+            # if goal buffer has been defined, RPC mod-focus to update chunks
+            if cmuactr.buffer_read('goal'):
+                print("mod_focus")
+
+                # cmuactr.mod_focus('cart_pos', obs[0], 'cart_vel', obs[1], 'pole_pos',
+                # obs[2], 'pole_vel', obs[3])
+                cmuactr.mod_focus(focus_chunks)
+            # otherwise init goal with current observation
+            else:
+                print("goal_focus")
+                init_focus = ['isa', 'game-state']
+                init_focus += focus_chunks
+                init_focus += ['state', 'start']
+
+                print(f"Init Focus: {init_focus}")
+
+                cmuactr.goal_focus(cmuactr.define_chunks(init_focus)[0])
+
+
+    def addPerception(self, obs) -> str:
+        self.obs = obs
+        print(f"CMU Perception sees: {self.obs}")
+        self.update_model_action(obs)
+        return True
+
+
 class Motor(AbstractMotor):
 
     model_action = None
@@ -229,18 +359,32 @@ class Motor(AbstractMotor):
     key_monitor_installed = False
 
 
-    def __init__(self):
+    def __init__(self, model=None):
 
+        self.model = model
         self.key_monitor_installed = self.add_key_monitor()
+        self.busy = False
+
+    def setActionSpace(self, space):
+        self.action_space = space
 
     def respond_to_keypress(self, model, key):
-        print("respond_to_keypress: " + key)
-        #global move_cmd
+        print(f"respond_to_keypress: {key}")
+        global move_cmd
+        global busy
 
-        if model:
+        cursor = self.model.perception.last_obs
+
+        if str(key) == 'c':
+            print(f"force_mouseclick: {cursor}")
+            self.next_action = cursor
+        elif model:
             self.next_action = int(key)
         else:
             self.next_action = 0
+
+    def force_mouseclick(self, click):  # TODO see if we can include a mouse move and click
+        print("force_mouseclick: " + click)
 
     def add_key_monitor(self):
 
@@ -258,12 +402,43 @@ class Motor(AbstractMotor):
         else:
             return False
 
+    def respond_to_mouseclick(model, click, finger=None):  # TODO see if we can include a mouse move and click
+        print("respond_to_mouseclick: " + click)
+        global move_cmd
+
+        if model:
+            move_cmd = click
+        else:
+            move_cmd = 0
+
     def remove_key_monitor(self):
 
         cmuactr.remove_command_monitor("output-key", "cartpole-key-press")
         cmuactr.remove_command("cartpole-key-press")
 
         self.key_monitor_installed = False
+
+    def add_mouse_monitor():
+        global mouse_monitor_installed
+
+        if mouse_monitor_installed == False:
+            cmuactr.add_command("sc2-mouse-click", respond_to_mouseclick,
+                             "sc2 task mouse output monitor")
+            cmuactr.monitor_command("click-mouse", "sc2-mouse-click")
+            mouse_monitor_installed = True
+            print("mouse monitor installed")
+
+            return True
+        else:
+            return False
+
+    def remove_mouse_monitor():
+
+        cmuactr.remove_command_monitor("click-mouse", "sc2-mouse-click")
+        cmuactr.remove_command("sc2-mouse-click")
+
+        global mouse_monitor_installed
+        mouse_monitor_installed = False
 
 
     def addMotor(self) -> str:

@@ -19,6 +19,7 @@ import numpy as np
 
 from examples.base_example import BaseExample
 
+
 __author__ = 'Islam Elnabarawy'
 __description__ = 'Run a scripted example using the SC2CollectMineralShards-v1 environment.'
 
@@ -27,6 +28,8 @@ _PLAYER_NEUTRAL = 3  # beacon/minerals
 _NO_OP = 0
 
 _ENV_NAME = "SC2CollectMineralShards-v1"
+
+
 
 
 class CollectMineralShards2d(BaseExample):

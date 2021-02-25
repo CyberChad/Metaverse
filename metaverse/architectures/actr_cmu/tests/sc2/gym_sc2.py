@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import cmuactr as actr
+import metaverse.architectures.actr_cmu.cmuactr as actr
 import math
 import numbers
 from os import environ as env
@@ -73,7 +73,7 @@ import os
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 print(DIR_PATH)
 
-actr.load_act_r_model(DIR_PATH+"/sc2beacons.lisp")
+actr.load_act_r_model(DIR_PATH+"/gym_sc2-beacons.lisp")
 
 ACTR_DIR = "/home/user/ACT-R/"
 
@@ -372,7 +372,7 @@ if __name__ == "__main__":
     actr.install_device(window)
     add_key_monitor() #TODO hook this up to the SC2 env.ACTIONS
     add_mouse_monitor()  # TODO hook this up to the SC2 env.ACTIONS
-    #
+
     # sc2agent = BeaconAgent()
     #
     # game_thread = threading.Thread(target=sc2_thread, args=sys.argv)

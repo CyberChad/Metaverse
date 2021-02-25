@@ -10,6 +10,7 @@
 
   ;; This type holds all the game info
 
+  ;; (chunk-type game-state cart_pos cart_vel pole_pos pole_vel state)
   (chunk-type game-state cart_pos cart_vel pole_pos pole_vel state)
 
   ;; This chunk-type should be modified to contain the information needed

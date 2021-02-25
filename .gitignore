@@ -22,3 +22,5 @@ Architectures/SOAR/SoarLibs/__pycache__/
 *.zip
 
 *.pickle
+
+*.html

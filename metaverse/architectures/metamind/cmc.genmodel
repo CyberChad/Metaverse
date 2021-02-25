@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/metamind/src" modelPluginID="metamind" modelName="Cmc"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="5.0" copyrightFields="false" operationReflection="true" importOrganizing="true">
+  <foreignModel>metamind.ecore</foreignModel>
+  <genPackages prefix="Metamind" disposableProviderFactory="true" ecorePackage="metamind.ecore#/">
+    <genClasses ecoreClass="metamind.ecore#//Model">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Model/modules"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute metamind.ecore#//Model/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Model/environment"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="metamind.ecore#//Module">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute metamind.ecore#//Module/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Module/buffer"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//Buffer">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute metamind.ecore#//Buffer/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Buffer/bufferchunk"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//DeclarativeMemory">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//DeclarativeMemory/dmchunks"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//ProceduralMemory">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//ProceduralMemory/rules"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//Motor"/>
+    <genClasses ecoreClass="metamind.ecore#//Visual"/>
+    <genClasses ecoreClass="metamind.ecore#//Rule">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Rule/conditions"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute metamind.ecore#//Rule/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Rule/actions"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//Chunk">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute metamind.ecore#//Chunk/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Chunk/slot"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//Condition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Condition/LHSbuffers"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//Environment">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute metamind.ecore#//Environment/name"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//Action">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//Action/RHSbuffers"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//WorkingMemory">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference metamind.ecore#//WorkingMemory/wmchunks"/>
+    </genClasses>
+    <genClasses ecoreClass="metamind.ecore#//Slot">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute metamind.ecore#//Slot/value"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

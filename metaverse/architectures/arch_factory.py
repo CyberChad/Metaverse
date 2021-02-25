@@ -208,7 +208,7 @@ class Architectures:
 
 # ************************* Client Code Test ***********
 
-class Fucker():
+class ClientTest():
 
     def __init__(self):
         pass
@@ -237,12 +237,12 @@ if __name__ == "__main__":
 
 
     print("Client: Testing client code with the first factory type:")
-    Fucker.createModel(cmu.CmuActrFactory())
+    ClientTest.createModel(cmu.CmuActrFactory())
 
     print("\n")
 
     print("Client: Testing the same client code with the second factory type:")
-    Fucker.create_model(soar.SoarFactory())
+    ClientTest.create_model(soar.SoarFactory())
 
 
 

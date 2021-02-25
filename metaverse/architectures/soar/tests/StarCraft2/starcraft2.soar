@@ -4,46 +4,30 @@ indifferent-selection --epsilon-greedy
 sp {init*agent
     (state <s> ^type state -^name)
     -->
-    (<s> ^name ready)
+    (<s> ^name ready
+        ^beacon <beacon>)
+        (<beacon> ^pos_x <pox_x>)
+        (<beacon> ^pos_y <pos_y>)
     }
 
-sp {propose*move*create-output-command
-    (state <s> ^type state ^name ready
-    ^io.input-link.gym <gym_in>
-    -^output-cmd)
+sp {elaborate*beacon-position
+    (state <s> ^name ready
+     ^io.input-link.gym <gym>)
+      (<gym> ^beacon_x <pos_x> ^beacon_y <pos_y>)
 -->
-    (<s> ^operator <o>)
-    (<s> ^name waiting)
-    (<o> ^name move)
-    (write (crlf)|SP:propose*move*create-output-command|(crlf))
-    (write |Op: |<o>)
-    (write | name: move|(crlf))
-    }
-
-# create output command
-sp {apply*move*create-output-command
-    (state <s> ^operator <o> ^io <io>)
-    (<io> ^input-link.gym <gym_in>)
-    (<gym_in> ^x <x> ^y <y>)
-    (<io> ^output-link <out>)
-    (<o> ^name move)
--->
-    (<s> ^name busy)
     (<s> ^output-cmd <output-cmd>)
-    (<output-cmd> ^move <x> <y>)
-    (<out> ^cmd <cmd>)
-    (<cmd> ^valx <x> ^valy <y>)
-    (write (crlf)|SP:apply*move*create-output-command|(crlf))
-    (write |obs.x: |<x>| obs.y: |<y>(crlf))
+    (<output-cmd> ^location <dir>)
+    (<dir> ^pos_x <pos_x>)
+    (<dir> ^pox_y <pos_y>)
+     (write (crlf)|SP:elaborate*beacon-position|(crlf))
+     (write (crlf)|pos_x <pos.x> pos_y <pos.y>|(crlf))
     }
 
-# Remove the old commands after they are complete
-sp {apply*remove*old-output-command
-    (state <s> ^io.output-link <out> ^operator <o>)
-    (<out> ^cmd <cmd>)
-    (<o> ^name move)
--->
-    (<out> ^cmd <cmd> -)
-    (<s> ^output-cmd <cmd> -)
-    (<s> ^name ready)
-    }
+#sp {elaborate*onto-output-link
+#    (state <s> ^name ready
+#        ^io.output-link <ol>
+#         ^output-cmd <cmd>)
+#         (<cmd> ^location <dir>)
+#-->
+#    (<ol> ^move-marine <cmd>)
+#    }
