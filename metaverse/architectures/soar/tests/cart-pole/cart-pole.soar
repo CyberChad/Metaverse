@@ -2,6 +2,7 @@ rl --set learning on
 indifferent-selection --epsilon-greedy
 
 watch 4
+stats -t
 
 # Initialize the agent
 

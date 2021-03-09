@@ -1,6 +1,9 @@
 rl --set learning on
 indifferent-selection --epsilon-greedy
 
+watch 4
+stats -t
+
 sp {init*agent
     (state <s> ^type state -^name)
     -->

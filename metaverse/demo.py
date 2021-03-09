@@ -7,6 +7,26 @@ import os
 import logging
 import logging.config
 
+# Create a custom logger
+#logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+# log = logging.getLogger(__name__)
+
+# # Create handlers
+# c_handler = logging.StreamHandler()
+# f_handler = logging.FileHandler('file.log')
+# c_handler.setLevel(logging.WARNING)
+# f_handler.setLevel(logging.ERROR)
+#
+# # Create formatters and add it to handlers
+# c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+# f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# c_handler.setFormatter(c_format)
+# f_handler.setFormatter(f_format)
+#
+# # Add handlers to the logger
+# logger.addHandler(c_handler)
+# logger.addHandler(f_handler)
+
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
 
@@ -68,18 +88,20 @@ dictLogConfig = {
         }
     },
     "loggers": {
-        "metaDemo": {
+        "metaverse": {
             "handlers": ["fileHandler"],
-            "level": "INFO",
+            "level": "INFO"
         }
     },
 
     "formatters": {
         "myFormatter": {
-            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "format": "%(name)s : %(levelname)s : %(message)s"
         }
     }
 }
+
+#"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 def loadFromXML(file):
 
@@ -274,13 +296,13 @@ def test_cmu_counting():
     model = factory.createModel()
     model.load("/tests/psych/count_test.lisp")
 
-    myenv = SimpleEnvironment("counting")
+    myenv = SimpleEnvironment(name="counting")
 
     myexp = Experiment(model, myenv, "CMU Counting")
     myexp.start("cmu_count_test") # appends to a log file
-    myexp.run(1, 6)
+    myexp.run(1, 50)
     myexp.stop() #closes log file
-    # myexp.report()
+    myexp.report("ACTR")
 
 def test_cmu_cartpole():
 
@@ -299,9 +321,9 @@ def test_cmu_cartpole():
 
     myexp = Experiment(model, myenv, "CMU Gym Cartpole", map)
     myexp.start("cmu_cartpole") # appends to a log file
-    myexp.run(1, 195) #if no cycles provided, env determines end state
+    myexp.run(10, 195) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
-    #myexp.report()
+    myexp.report("ACTR")
 
 def test_cmu_starcraft():
 
@@ -319,9 +341,9 @@ def test_cmu_starcraft():
     model.motor.next_action = [-1, -1]
 
     myexp.start("cmu_beacons") # appends to a log file
-    myexp.run(1, 500) #if no cycles provided, env determines end state
+    myexp.run(1, 100) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
-    #myexp.report()
+    myexp.report("ACTR")
 
 # --------------------------
 #       Soar Tests
@@ -337,20 +359,23 @@ def test_soar_counting():
 
     model.load("soar_agent.config")
 
-    myenv = SimpleEnvironment("counting")
+    trials = 1
+    steps = 11
+
+    myenv = SimpleEnvironment("counting", maxsteps=steps)
 
     myexp = Experiment(model, myenv, "Soar Counting")
     myexp.start("soar_counting") # appends to a log file
     #myexp.run(12)
-    myexp.run(1, 12)
+    myexp.run(trials, steps)
     myexp.stop() #closes log file
+    myexp.report("Soar")
 
 def test_soar_cartpole():
 
     # test CMU ACT-R Counting
     factory = soar_factory.SoarFactory()
     model = factory.createModel()
-
 
     model.load("cart-pole.soar","cart-pole")
 
@@ -360,9 +385,9 @@ def test_soar_cartpole():
     model.perception.create_input_wmes
 
     myexp.start("soar_cartpole") # appends to a log file
-    myexp.run(3, 195) #if no cycles provided, env determines end state
+    myexp.run(10, 195) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
-    #myexp.report()
+    myexp.report("Soar")
 
 def test_soar_starcraft():
 
@@ -378,9 +403,9 @@ def test_soar_starcraft():
     model.motor.next_action = [-1, -1]
 
     myexp.start("soar_beacons") # appends to a log file
-    myexp.run(1, 500) #if no cycles provided, env determines end state
+    myexp.run(1, 100) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
-    #myexp.report()
+    myexp.report("Soar")
 
 # --------------------------
 #       CCM ACT-R Tests
@@ -403,6 +428,8 @@ def test_ccm_counting():
     model.declarative.addWME('count 5 6')
     model.declarative.addWME('count 6 7')
     model.declarative.addWME('count 7 8')
+    model.declarative.addWME('count 8 9')
+    model.declarative.addWME('count 9 10')
 
     myenv = SimpleEnvironment("counting")
 
@@ -410,7 +437,7 @@ def test_ccm_counting():
     myexp.start("ccm_count_test") # appends to a log file
     myexp.run(1, 10)
     myexp.stop() #closes log file
-    # myexp.report()
+    myexp.report("CCM")
 
 def test_ccm_cartpole():
 
@@ -429,6 +456,7 @@ def test_ccm_cartpole():
     myexp.start("ccm_cartpole") # appends to a log file
     myexp.run(10, 195) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
+    myexp.report("CCM") #TODO: get report type from agent factory
 
 def test_ccm_starcraft():
 
@@ -446,17 +474,17 @@ def test_ccm_starcraft():
     model.motor.next_action = [-1,-1]  # TODO: change to random action space
 
     myexp.start("ccm_beacons") # appends to a log file
-    myexp.run(1, 500) #if no cycles provided, env determines end state
+    myexp.run(1, 100) #if no cycles provided, env determines end state
     myexp.stop() #closes log file
-    #myexp.report()
+    myexp.report("CCM") #TODO: get report type from agent factory
 
 if __name__ == '__main__':
 
     logging.config.dictConfig(dictLogConfig)
-    logger = logging.getLogger("metaDemo")
+    logger = logging.getLogger("metaverse")
+    logger.info("=== Program started ===")
 
-    logger.info("------ Program started -------")
-    logger.info("Done!")
+
 
     # prompt = MyPrompt()
     # prompt.prompt = 'Thesis> '
@@ -474,36 +502,38 @@ if __name__ == '__main__':
 
     print("*** START CMU COUNTING ***")
     test_cmu_counting()
+    #
+    # print("*** START CMU CARTPOLE ***")
+    # test_cmu_cartpole()
+    #
+    # print("*** START CMU StarCraft ***")
+    # test_cmu_starcraft()
 
-    print("*** START CMU CARTPOLE ***")
-    test_cmu_cartpole()
 
-    print("*** START CMU StarCraft ***")
-    test_cmu_starcraft()
+    # # ----------------------------------------
+    # #           Soar Tests
+    # # ----------------------------------------
 
+    # print("*** START SOAR COUNTING ***")
+    # test_soar_counting()
+    #
+    # print("*** START Soar CARTPOLE ***")
+    # test_soar_cartpole()
 
-    # ----------------------------------------
-    #           Soar Tests
-    # ----------------------------------------
-
-    print("*** START SOAR COUNTING ***")
-    test_soar_counting()
-
-    print("*** START Soar CARTPOLE ***")
-    test_soar_cartpole()
-
-    print("*** START Soar StarCraft ***")
-    test_soar_starcraft()
+    # print("*** START Soar StarCraft ***")
+    # test_soar_starcraft()
 
     # ----------------------------------------
     #           CCMSuite3 ACT-R Tests
     # ----------------------------------------
 
-    print("*** START CCMSuite3 COUNTING ***")
-    test_ccm_counting()
+    # print("*** START CCMSuite3 COUNTING ***")
+    # test_ccm_counting()
+    #
+    # print("*** START CCMSuite3 CartPole ***")
+    # test_ccm_cartpole()
+    #
+    # print("*** START CCMSuite3 StarCraft ***")
+    # test_ccm_starcraft()
 
-    print("*** START CCMSuite3 CartPole ***")
-    test_ccm_cartpole()
-
-    print("*** START CCMSuite3 StarCraft ***")
-    test_ccm_starcraft()
+    logger.info("=== Program Finished ===")

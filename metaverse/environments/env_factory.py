@@ -5,7 +5,9 @@ import gym
 import sc2gym.envs
 import argparse
 from absl import flags
+import logging
 
+log = logging.getLogger("metaverse")
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -47,7 +49,7 @@ class Environments:
 
 class SimpleEnvironment(AbstractEnvironment):
 
-    def __init__(self, name="", adapter = "psych", target=6):
+    def __init__(self, name="", adapter = "psych", maxsteps = -1):
         self.name = name
         self.adapter = adapter
 
@@ -58,10 +60,25 @@ class SimpleEnvironment(AbstractEnvironment):
 
         self.last_observation = None
 
-
         self.done = False
         self.count = 0
-        self.target = target
+        # self.target = target
+
+        self.episode_reward = 0
+        self.total_reward = 0
+        self.episode = 0
+
+        self.maxsteps = maxsteps
+
+    def isDone(self):
+        return self.done
+
+    def getEspisodeReward(self):
+        return self.episode_reward
+
+    def getTotalRewards(self):
+        return self.total_reward
+
 
     def setAdapter(self, adapter):
         self.adapter = adapter
@@ -79,8 +96,10 @@ class SimpleEnvironment(AbstractEnvironment):
 
     def step(self):
         self.count = self.count + 1
-        if self.count == self.target:
+        if self.count == self.maxsteps:
             self.done = True
+        # if self.count == self.target:
+        #     self.done = True
 
     def reset(self):
         pass
@@ -104,7 +123,20 @@ class GymEnvironment(AbstractEnvironment):
 
         self.done = False
 
+        self.episode_reward = 0
 
+        self.total_reward = 0
+
+        self.episode = 0
+
+    def isDone(self):
+        return self.done
+
+    def getEspisodeReward(self):
+        return self.episode_reward
+
+    def getTotalRewards(self):
+        return self.total_reward
 
     def setAdapter(self, adapter):
         self.adapter = adapter
@@ -124,13 +156,14 @@ class GymEnvironment(AbstractEnvironment):
         self.next_action = action
 
     def step(self):
-        print("Env:step()")
+        log.debug("Env:step()")
         self.gym_env.render()
         if self.next_action is not None:
-            print("move_cmd sent to gym: "+str(self.next_action))
+            log.debug(f"Env:step() move_cmd: {str(self.next_action)}")
             self.last_observation, self.reward, self.done, self.info = self.gym_env.step(self.next_action)
 
             self.step_num = self.step_num + 1
+            self.episode_reward += self.reward
 
     def reset(self):
         print("Env:reset()")
@@ -138,7 +171,20 @@ class GymEnvironment(AbstractEnvironment):
         self.last_observation, self.reward, self.done, self.info = self.gym_env.step(self.next_action)
         self.step_num = 0
 
+        if self.episode > 0:
+            print(f"Episode {self.episode} ended with reward {self.episode_reward} "
+                  f"after {self.step_num} steps.")
+
+        self.episode += 1
+        self.total_reward += self.episode_reward
+        self.episode_reward = 0
+
     def close(self):
+
+        if self.episode > 0:
+            print(f"Got {self.total_reward} total reward, with an average reward of "
+                  f"{float(self.total_reward) / self.episode} per episode")
+
         self.gym_env.close()
 
 class StarCraftEnvironment(AbstractEnvironment):
@@ -151,10 +197,10 @@ class StarCraftEnvironment(AbstractEnvironment):
 
     _ENV_NAME = "SC2MoveToBeacon-v1" #defaults to 2-D representation
 
-    def __init__(self, env_name= _ENV_NAME, visualize=True, step_mul=None, random_seed=None, find_features=True):
-        # self.name = name
+    def __init__(self, name = _ENV_NAME, visualize=True, step_mul=None, random_seed=None, find_features=True):
+        self.name = name
         # self.adapter = adapter
-        self.env_name = env_name
+        self.env_name = name
         self.visualize = visualize
         self.step_mul = step_mul
         self.random_seed = random_seed
@@ -172,10 +218,24 @@ class StarCraftEnvironment(AbstractEnvironment):
 
         self.done = False
 
+        self.episode_reward = 0
+
+        self.total_reward = 0
+
+        episodes_done = 0
 
         self.gym_env.settings['visualize'] = self.visualize
         self.gym_env.settings['step_mul'] = self.step_mul
         self.gym_env.settings['random_seed'] = self.random_seed
+
+    def isDone(self):
+        return self.done
+
+    def getEspisodeReward(self):
+        return self.episode_reward
+
+    def getTotalRewards(self):
+        return self.total_reward
 
     def setAdapter(self, adapter):
         self.adapter = adapter
@@ -211,6 +271,9 @@ class StarCraftEnvironment(AbstractEnvironment):
 
             self.step_num = self.step_num + 1
 
+            self.episode_reward += self.reward
+
+
     def reset(self):
         print("Env:reset()")
         self.gym_env.reset()
@@ -218,6 +281,9 @@ class StarCraftEnvironment(AbstractEnvironment):
         if self.find_features:
             self.last_observation = self.get_features(self.last_observation)
         self.step_num = 0
+
+        self.total_reward += self.episode_reward
+        self.episode_reward = 0
 
     def close(self):
         self.gym_env.close()

@@ -13,7 +13,11 @@
   (d first 3 second 4 )
   (e first 4 second 5 )
   (f first 5 second 6 )
-  (first-goal start 1 end 6 )
+  (g first 6 second 7 )
+  (h first 7 second 8 )
+  (i first 8 second 9 )
+  (j first 9 second 10 )
+  (first-goal start 1 end 10 )
 )
 
 (goal-focus first-goal)

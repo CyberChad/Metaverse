@@ -22,13 +22,13 @@ def writeToFile():
         'from': 'Alabama'
     })
 
-    with open('data.txt', 'w') as outfile:
+    with open('json_data.txt', 'w') as outfile:
         json.dump(data, outfile)
 
 
 def readFromFile():
 
-    with open('data.txt') as json_file:
+    with open('json_data.txt') as json_file:
         data = json.load(json_file)
         for p in data['people']:
             print('Name: ' + p['name'])

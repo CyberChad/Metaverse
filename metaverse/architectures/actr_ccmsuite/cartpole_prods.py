@@ -15,7 +15,7 @@ def observeCart(perception='?cartpos ?cartvel ?polepol ?polevel'):
     else:
         direction = None
 
-    temp = f"move {direction}"
+    temp = f"[CCM] ACTR.observeCart() motor.press {direction}"
     print(temp)
     motor.press(direction)
 

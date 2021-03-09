@@ -99,15 +99,14 @@ class AbstractWorkingMemory(ABC):
     @abstractmethod
     def addWME(self) -> None:
         """
-        Product B is able to do its own thing...
+        Working Memory is able to do its own thing...
         """
         pass
 
     @abstractmethod
     def removeWME(self, collaborator: AbstractModel) -> None:
         """
-        ...but it also can collaborate with the ProductA.
-
+        ...but it also can collaborate with the Abstract Model.
         The Abstract Factory makes sure that all products it creates are of the
         same variant and thus, compatible.
         """

@@ -1,5 +1,8 @@
 import os
 import time
+import logging
+log = logging.getLogger("metaverse")
+# logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(levelname)s - %(message)s')
 
 from metaverse.architectures.arch_factory import \
     AbstractFactory,\
@@ -73,6 +76,9 @@ class Model(AbstractModel):
     def __init__(self):
 
         cmuactr.reset()
+        cmuactr.reload()
+
+        self.done = False
 
         #self.model_thread = ModelThread()
         self.perception = Perception(self)
@@ -83,8 +89,8 @@ class Model(AbstractModel):
 
         # generate a default file
 
-        self.window = cmuactr.open_exp_window("Find Beacon")
-        cmuactr.install_device(self.window)
+        #self.window = cmuactr.open_exp_window("Find Beacon")
+        #cmuactr.install_device(self.window)
 
         #set default options
 
@@ -94,10 +100,13 @@ class Model(AbstractModel):
         self.modelFile = modelFile
 
         result = cmuactr.load_act_r_model(DIR_PATH + "/" + modelFile)
+        cmuactr.reload(True)
 
         return result
 
+
     def step(self) -> str:
+        """Step function is basically the Production System clock. One step per cycle."""
 
         #self.obs = obs
         #print(f"Model step sees: {obs}")
@@ -109,25 +118,33 @@ class Model(AbstractModel):
         #     cmuactr.current_connection.evaluate("run-step")
         # time.sleep(0.05)
         #self.model_thread.step()
-        cmuactr.run(1)
+
+        cmuactr.run(0.05)
+        self.events = cmuactr.call_command("mp-queue-count")
+        print(f"Event queue count: {self.events}")
+        log.debug(f"Event queue count: {self.events}")
+
+        if self.events == 0: #check to see if the model ran out of valid productions
+            self.done = True
 
         #return "The result of CmuActrModel:step()"
 
-        return 0
+        return 0 #Exit code, consider replacing with something else (events?)
 
     def run(self, seconds=999,realTime=False) -> str:
-        """Run """
+        """Run launches the agent for asynchronous/realtime scenarios and environments"""
         #cmuactr.run(seconds,realTime)
         self.model_thread.start()
         return "The result of CmuActrModel:run()"
 
     def reset(self) -> str:
+        """reset puts the agent back in the original state specified in the model file"""
         cmuactr.reset()
         return "The result of CmuActrModel:reset()"
 
     def shutdown(self) -> str:
+        """unload and model.""" #TODO send kill SIG to act-r-command process ID
         return "The result of CmuActrModel:shutdown()"
-
 
 class WorkingMemory(AbstractWorkingMemory):
 
@@ -190,7 +207,6 @@ class Perception(AbstractPerception):
         self.observation = []
         self.model = model
 
-
     def transduce(self, obs):
 
         self.last_obs = obs
@@ -244,9 +260,9 @@ class Perception(AbstractPerception):
             #generic logic to present the "screen" to the agent
             focus_chunks = self.transduce(obs)
 
-            window = self.model.window
+            #window = self.model.window
 
-            cmuactr.add_text_to_exp_window(window, "B", x=obs[0], y=obs[1])
+            #cmuactr.add_text_to_exp_window(window, "B", x=obs[0], y=obs[1])
 
             # if goal buffer has been defined, RPC mod-focus to update chunks
             if cmuactr.buffer_read('goal'):

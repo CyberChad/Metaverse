@@ -2,7 +2,7 @@ rl --set learning on
 indifferent-selection --epsilon-greedy
 
 # Initialize the agent
-
+watch 4
 
 sp {test*state
     (state <s> ^io.input-link.gym <gym>)

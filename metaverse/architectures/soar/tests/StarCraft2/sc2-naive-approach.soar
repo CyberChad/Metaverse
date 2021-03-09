@@ -2,6 +2,8 @@ rl --set learning on
 indifferent-selection --epsilon-greedy
 
 # Initialize the agent
+watch 1
+stats -t
 
 sp {propose*initialize-movetobeacon
     (state <s> ^superstate nil

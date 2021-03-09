@@ -6,7 +6,7 @@
   (sgp :esc t :lf .05 :trace-detail high)
 
   ;; adjust these as needed
-  (sgp :v nil :ans .2 :mp 10.0 :rt -60)
+  ;;(sgp :v nil :ans .2 :mp 10.0 :rt -60)
 
   ;; need to use a mouse
   (sgp :needs-mouse t :show-focus t)

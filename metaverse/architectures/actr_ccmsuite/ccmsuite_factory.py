@@ -1,6 +1,7 @@
 import os
 import time
 import importlib
+import logging
 from inspect import getmembers, isfunction
 
 from metaverse.architectures.arch_factory import \
@@ -16,6 +17,8 @@ import ccm
 import ccm.lib.actr as actr
 from ccm.lib.actr import *
 import metaverse.architectures.actr_ccmsuite as ccmsuite
+
+log = logging.getLogger("metaverse")
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -64,29 +67,7 @@ class CCMAgent(ACTR): #TODO: move this to external model file
     next_action = 0
 
     def init():
-        print(f"--Model init--")
-
-
-    #insert dynamic function definitions here....
-
-    # def initializeAddition(goal='add ?num1 ?num2 count:None?count sum:None?sum'):
-    #     goal.modify(count=0, sum=num1)
-    #     memory.request('count ?num1 ?next')
-    #
-    # def terminateAddition(goal='add ?num1 ?num2 count:?num2 sum:?sum'):
-    #     goal.set('result ?sum')
-    #     print(sum)
-    #     #goal.set('add 5 2 count:None sum:None')
-    #
-    # def incrementSum(goal='add ?num1 ?num2 count:?count!?num2 sum:?sum',
-    #                  retrieve='count ?sum ?next'):
-    #     goal.modify(sum=next)
-    #     memory.request('count ?count ?n2')
-
-    # def incrementCount(goal='add ?num1 ?num2 count:?count sum:?sum',
-    #                    retrieve='count ?count ?next'):
-    #     goal.modify(count=next)
-    #     memory.request('count ?sum ?n2')
+        print("[DEBUG] CCMAgent:init()")
 
 class MyEnvironment(ccm.Model):
 
@@ -94,16 +75,16 @@ class MyEnvironment(ccm.Model):
 
     def key_pressed(self, key):
         self.key = key
-        print(f"MyEnvironment():key pressed is {key}")
+        print(f"[DEBUG] MyEnvironment():key pressed is {key}")
 
 
 class Model(AbstractModel):
 
     def __init__(self):
-        print(f"Model:__init__()")
+        log.info("Model:__init__()")
         self.ccm_env = MyEnvironment()
 
-
+        self.done = False
         #(sgp :esc t:lf .05:trace-detail high)
 
     def load(self, prodFile="") -> str:
@@ -116,7 +97,7 @@ class Model(AbstractModel):
         #for each production, add name and reference to CCMAgent class
         for x in functions_list:
             name = x[0]
-            print(f"Adding Production: {name}")
+            log.debug(f"Adding Production: {name}")
             setattr(CCMAgent, f'{name}', x[1])
 
         self.agent = CCMAgent()
@@ -149,7 +130,7 @@ class Model(AbstractModel):
         # next_action = self.agent.next_action
         # self.motor.next_action = next_action
         next_action = self.motor.update()
-        print(f"Model:step() Next Action is: {next_action}")
+        log.debug(f"Model:step() Next Action is: {next_action}")
         # actr.run(1, True)
         #return "The result of CmuActrModel:step()"
 
@@ -239,7 +220,7 @@ class Perception(AbstractPerception):
 
     def addPerception(self, obs) -> str:
         self.obs = obs
-        print(f"CCMSuite3 Perception sees: {self.obs}")
+        log.debug(f"CCMSuite3 Perception sees: {self.obs}")
         self.update_model_action(obs)
         return True
 
@@ -263,7 +244,7 @@ class Perception(AbstractPerception):
         else:
             num_features = self.observation_shape
 
-        print(f"num features: {num_features}")
+        log.debug(f"num features: {num_features}")
         #chunks.append(chunknames[0])
         chunks += f"{obs[0]}"
 
@@ -271,7 +252,7 @@ class Perception(AbstractPerception):
             #chunks.append(chunknames[i])
             chunks += f" {obs[i]}"
 
-        print(f"Transduction: {chunks}")
+        log.debug(f"Perception:transduce(): {chunks}")
 
         return chunks
 
@@ -292,13 +273,12 @@ class Perception(AbstractPerception):
     def update_model_action(self, obs):
 
         self.last_obs = obs
-        print(f"CCMSuite3 Perception sees: {self.last_obs}")
+        log.debug(f"Perception:update_model_action(): {self.last_obs}")
 
         if obs is not None:
             self.last_obs = obs
 
             temp = self.transduce(obs)
-            print("Updating perceptual buffer: "+temp)
             self.agent.perception.set(temp)
 
 class Motor(AbstractMotor):
@@ -311,7 +291,7 @@ class Motor(AbstractMotor):
         #self.next_action = 0
 
         self.next_action = default #NO_OP test for SC
-        print(f"Initializing Motor Module...")
+        log.info(f"Initializing Motor Module...")
 
     def setActionSpace(self, space):
         self.action_space = space
@@ -330,7 +310,7 @@ class Motor(AbstractMotor):
 
         key = self.ccm_env.key
         if key is not None:
-            print(f"Motor():update key to {key}")
+            log.debug(f"Motor:update() key: {key}")
             self.next_action = key
 
         return self.next_action

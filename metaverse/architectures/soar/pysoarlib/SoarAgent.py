@@ -112,7 +112,7 @@ class SoarAgent():
         self.connected = False
         self.is_running = False
         self.queue_stop = False
-        self.dc_sleep = 0.0
+        self.dc_sleep = 0.05 #CP updated to 50ms cognitive cycle
 
         self.kernel = sml.Kernel.CreateKernelInNewThread()
         self.kernel.SetAutoCommit(False)

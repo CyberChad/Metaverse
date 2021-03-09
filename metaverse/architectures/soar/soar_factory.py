@@ -48,21 +48,30 @@ class SimpleConnector(AgentConnector):
     def on_input_phase(self, input_link):
         if not self.num.is_added():
             self.num.add_to_wm(input_link)
+            self.target.add_to_wm(input_link)
         else:
             self.num.update_wm()
+            self.target.update_wm()
 
     def on_init_soar(self):
         self.num.remove_from_wm()
+        self.target.remove_from_wm()
 
     def on_output_event(self, command_name, root_id):
+        print(f"on_output_event() command: {command_name}")
         if command_name == "increase-number":
             self.process_increase_command(root_id)
 
     def process_increase_command(self, root_id):
         number = root_id.GetChildInt("number")
+        #target = root_id.GetChildInt("target")
+        print(f"process_increase_command() number: {number}")
+        #print(f"process_increase_command() number: {number}, target: {target}")
         if number:
+        #if number and target and (number < target):
             self.num.set_value(self.num.val + number)
         root_id.AddStatusComplete()
+
 
 class GymConnector(AgentConnector):
     """Handle arbitrary Gym inputput and output data
@@ -237,6 +246,8 @@ class SoarModel(AbstractModel):
         self.perception = SoarPerception(self)
         self.motor = SoarMotor(self)
 
+        self.done = False
+
     def create_kernel(self):
         kernel = sml.Kernel.CreateKernelInCurrentThread()
         if not kernel or kernel.HadError():
@@ -261,7 +272,9 @@ class SoarModel(AbstractModel):
 
         if adapter == "psych": #Uses new AgentConnector
 
-            self.agent = SoarAgent(config_filename=self.config_path, write_to_stdout=True)
+            _WATCH_LEVEL = 4
+
+            self.agent = SoarAgent(config_filename=self.config_path, write_to_stdout=True, watch_level=_WATCH_LEVEL)
             self.modelFile = modelFile
 
             # connector_switch = {
@@ -271,17 +284,28 @@ class SoarModel(AbstractModel):
 
             self.agent.add_connector(adapter, SimpleConnector(self.agent))
             self.agent.connect()
+            self.agent.execute_command("stats -t") #start tracking per-cycle stats
+
+            #max-dc-time sets a maximum amount of time a decision cycle is permitted.
+            self.agent.execute_command("max-dc-time 0.05")
 
         elif adapter == "cart-pole":
             self.kernel = self.create_kernel()
             self.agent = self.create_agent(self.kernel, "agent")
             register_print_callback(self.kernel, self.agent, callback_print_message, None)
 
+            #self.kernel.execute_command("stats -t") #start tracking per-cycle stats
+
             #TODO: move this to config file
             map = ['cart-position', 'cart-velocity', 'pole-angle', 'pole-tip-velocity']
             self.perception.create_input_wmes(self.agent, map)
+            #self.kernel.ExecuteCommandLine("stats -t", "agent")
+            #print(f"\n!SHOULD PRINT STATS HERE!!!\n")
+            #self.kernel.ExecuteCommandLine("stats", "agent")
 
             print(self.agent.ExecuteCommandLine("source architectures/soar/tests/cart-pole/cart-pole.soar"))
+
+            print(self.agent.ExecuteCommandLine("stats -t"))  # start tracking per-cycle stats
 
         elif adapter == "starcraft":
             self.kernel = self.create_kernel()
@@ -290,6 +314,8 @@ class SoarModel(AbstractModel):
             map = ['beacon_x', 'beacon_y']
             self.perception.create_input_wmes(self.agent, map)
             print(self.agent.ExecuteCommandLine("source architectures/soar/tests/StarCraft2/starcraft2.soar"))
+            print(self.agent.ExecuteCommandLine("max-elaborations 10"))
+            print(self.agent.ExecuteCommandLine("max-goal-depth 5"))
 
         else: #shouldn't be here!
             print(f"ERROR: Couldn't find adapter {adapter}")
@@ -306,37 +332,72 @@ class SoarModel(AbstractModel):
         #TODO: call update() for each registered module
 
         if self.adapter == "psych":
-            self.agent.execute_command("run 1")  # runs for 1 decision cycles
+            #status = self.agent.agent.IsSoarRunning()
+            #print(f"status: {status}")
+            #self.agent.execute_command("run -o")  # runs for 1 decision cycles
+
+            self.agent.execute_command("run -o")  # runs for 1 decision cycles
+
+            #running = self.agent.kernel.GetAgentStatus()
 
         #if self.connector == "cart-pole":
         else:
             #self.update_input_wmes(self.perception.observation)
             self.kernel.RunAllAgents(1) #run for one decision cycle
-
+            #self.kernel.ExecuteCommandLine("stats", "agent")
             #TODO: move this to motor.update()
             move_cmd = self.motor.get_move_command(self.agent, self.adapter)
+
             if move_cmd is not None:
                 self.motor.next_action = move_cmd
 
         # time.sleep(0.1)
-        return "The result of SoarModel:step()"
+        return  #Returned successfully
 
     def run(self, steps=1) -> str:
         self.agent.execute_command("run "+str(steps))
         return "The result of SoarModel:run()"
 
     def reset(self) -> str:
+        print(self.agent.ExecuteCommandLine("stats"))
         self.agent.ExecuteCommandLine("init-soar")
+        self.agent.ExecuteCommandLine("stats -t")
+
+
         return "The result of SoarModel:reset()"
 
     def shutdown(self) -> str:
 
+        print(f"\nBEGIN STATS HERE\n")
+
         if self.adapter == "psych":
+            self.agent.execute_command("stats")  #system (default)
+            self.agent.execute_command("stats -m") #memory
+            self.agent.execute_command("stats -r") #rete structure
+            self.agent.execute_command("stats -M") #Maximum values
+            self.agent.execute_command("stats -c") #per-cycle
+            print(f"<START-CSV>")
+            self.agent.execute_command("stats -C") #-c in CSV form
+            print(f"<END-CSV>")
+            #self.agent.execute_command("stats -S <N>") #sorted by column N
             self.agent.kill()
         else:
+            #print(self.kernel.ExecuteCommandLine("stats", "agent"))  #system (default)
+            #print(self.agent.ExecuteCommandLine("stats"))  # system (default)
+            #print(self.agent.ExecuteCommandLine("stats -m -c")) #memory
+            #print(self.agent.ExecuteCommandLine("stats -r")) #rete structure
+            #print(self.agent.ExecuteCommandLine("stats -M")) #Maximum values
+            #print(self.agent.ExecuteCommandLine("stats -c")) #per-cycle
+
+            print(f"<START-CSV>")
+            print(self.agent.ExecuteCommandLine("stats -C")) #-c in CSV form
+            print(f"<END-CSV>")
+
             self.kernel.DestroyAgent(self.agent)
             self.kernel.Shutdown()
             del self.kernel
+
+        print(f"\nEND STATS HERE\n")
 
         return "The result of SoarModel:shutdown()"
 

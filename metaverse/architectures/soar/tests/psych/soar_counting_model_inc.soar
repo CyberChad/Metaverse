@@ -3,6 +3,9 @@
 # 
 # Will print 1, 2, 3, 4, 5, etc.
 
+watch 3
+stats -t
+
 sp {topstate*propose*init-agent
    (state <s> ^superstate nil
              -^name test-agent)
@@ -23,11 +26,13 @@ sp {topstate*apply*init-agent
 sp {topstate*propose*update-number
    (state <s> ^name test-agent
               ^io.input-link.number <new>
+              ^io.input-link.target <tar>
               ^current-number {<cur> <> <new>})
 -->
    (<s> ^operator <o> + >)
    (<o> ^name update-number
         ^new-number <new>)
+   (write (crlf) |Soar propose target = | <tar>)
 }
 
 sp {top-state*apply*update-number
@@ -39,7 +44,7 @@ sp {top-state*apply*update-number
 -->
    (<s> ^current-number <old> -
         ^current-number <new>)
-   (write (crlf) |New Number = | <new>)
+   (write (crlf) |Soar Agent <new> = | <new>)
 }
 
 sp {topstate*propose*increase-number
@@ -74,3 +79,13 @@ sp {topstate*apply*anything*clean-ol
    (<ol> ^<cmd-name> <cmd> -)
 }
 
+sp {topstate*propose*halt
+   (state <s> ^name test-agent
+              ^io.input-link.number <new>
+              ^io.input-link.target <tar>
+              ^current-number {<cur> >= <tar>})
+-->
+   (write (crlf) |Soar propose halt <cur> <tar> = | <cur>|, |<tar>)
+   (<s> ^name finished)
+   (halt)
+}

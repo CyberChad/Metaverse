@@ -3,6 +3,11 @@ from abc import ABC, abstractmethod
 
 import os
 import time
+import logging
+from datetime import datetime
+import numpy as np
+
+log = logging.getLogger("metaverse")
 
 HOME_DIR = os.getenv("HOME")
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -13,8 +18,6 @@ import sys
 import metaverse
 import metaverse.architectures.arch_factory as arch_factory
 import metaverse.architectures.actr_cmu.cmuactr_factory as cmu_factory
-
-_DEBUG = True
 
 class AbstractExperiment(ABC):
     """
@@ -55,7 +58,8 @@ class AbstractExperiment(ABC):
         """General metrics from model and environment"""
         pass
 
-import metaverse.utils.loggers as log
+import metaverse.utils.scribe as scribe
+
 import metaverse.architectures as architectures
 
 
@@ -64,7 +68,7 @@ class Experiment(AbstractExperiment):
 
     """
 
-    def __init__(self, model, env, name="", map=None):
+    def __init__(self, model, env, name="", map=None, events=None):
 
         self.name = name
         self.model = model
@@ -72,14 +76,27 @@ class Experiment(AbstractExperiment):
 
         self.model.env = self.env
         self.env.model = self.model
+        self.events = events
+
+        #Stats for reporting
+        # TODO: move this into a proper structure
+
+        self.trials_count = 0
+        self.trials_time = 0
+
+        self.steps_count = 0
+        self.steps_time = 0
+
+        self.start_time = 0
+        self.stop_time = 0
 
 
         # TODO: Need Try/Catch since architecture and environment are mandatory;
         #  should fail if either are None
 
-        if _DEBUG:
-            print(f"Agent: {model}")
-            print(f"Environment: {env}")
+        # if _DEBUG:
+        logging.info(f"Agent: {model}")
+        logging.info(f"Environment: {env}")
 
         observation_space = self.env.getObservationSpace()
         print(f"Observation space: {observation_space}")
@@ -117,13 +134,16 @@ class Experiment(AbstractExperiment):
 
     def start(self, filename,dir=DIR_PATH+"/results/"):
         """Start transcript, appending print output to given filename"""
-        time = get_timestr()
-        self.outfile = dir+filename+"_"+time+".log"
+
+        self.start_time = datetime.now()
+        self.outfile = dir+filename+"_"+get_timestr()+".log"
         print(f"Logging experiment to {self.outfile}")
-        sys.stdout = log.Transcript(self.outfile)
+        sys.stdout = scribe.Transcript(self.outfile)
+
 
     def stop(self):
         """Stop transcript and return print functionality to normal"""
+        self.stop_time = datetime.now()
         self.model.shutdown()
         print(f"Shutting down experiment at {self.outfile}")
 
@@ -146,6 +166,9 @@ class Experiment(AbstractExperiment):
         print(f"Starting Experiment with {maxtrials} trials of {maxsteps} steps each.")
 
         # 1: get state from environment to initialize
+        self.max_trials = maxtrials
+        self.max_steps = maxsteps
+
         self.obs = self.env.getLastObservation()
         self.model.perception.update_model_action(self.obs)
         #print(f"Experiment:run() sees :{self.obs}")
@@ -157,14 +180,21 @@ class Experiment(AbstractExperiment):
             pass
             #agent_thread = subprocess.Popen(self.agent.run(100, True))
         step = 0
+        clock = 0
         trial = 0
+
+        self.exp_rewards = 0
+        self.trial_rewards = np.zeros((maxtrials, ), dtype=np.int32)
+
 
         #self.agent.run()
 
-        while step != maxsteps and trial < maxtrials:
+        while trial < maxtrials:
             #check to see if environment is done
-            while not self.env.done:
-                print(f"step: {step}")
+            while not self.env.done and not self.model.done and step <= maxsteps:
+                log.info(f"Experiment.step(): Trial: {trial} Step: {step}")
+                clock_time = (clock+1) * 0.05
+                print(f"[STEP] {format(clock_time, '.2f')}")
                 #2: present state to agent perception as self.obs
                 self.model.last_observation = self.obs
                 #3: trigger cognitive cycle in agent
@@ -183,9 +213,11 @@ class Experiment(AbstractExperiment):
                 #print(f"Experiment:run() sees :{self.obs}")
                 self.model.perception.update_model_action(self.obs)
                 step = step + 1
-                time.sleep(0.1)
+                clock = clock + 1
+                time.sleep(0.05)
 
-            else: #environment in solved state; reset
+            else: #environment or agent are in solved state; reset
+                self.trial_rewards[trial] = self.env.episode_reward
                 trial = trial + 1
                 print(f"Trial {trial}, Number of steps {step}")
                 step = 0
@@ -195,7 +227,7 @@ class Experiment(AbstractExperiment):
                 self.model.perception.update_model_action(self.obs)
                 self.model.step()
 
-    def report(self):
+    def report(self, type=None):
         """define some kind of pretty print report on all the stats.
 
             Inputs: choice of reports to generate
@@ -206,10 +238,54 @@ class Experiment(AbstractExperiment):
                 - Stats: TBD
         """
 
-        print(f"Reporting on outfile: {self.outfile}")
-        parser = log.Parser(self.outfile)
-        parser.importACTR()
+        #Report on experiment
 
+        print("*****************************************")
+        print("***********   RESULTS   *****************")
+        print("*****************************************")
+
+        print("\n------------------------------------")
+        print("Experiment Results")
+        print("------------------------------------")
+
+        #print(f"{self.scribe.experiment.load.filename})
+        print(f"Start Time: {self.start_time}")
+        print(f"Stop Time: {self.stop_time}")
+
+        running_time = self.stop_time - self.start_time
+        print(f"Runnig Time: {running_time}")
+
+        print(f"Number of Trials: {self.max_trials}")
+
+        print(f"Running Time: {self.trials_time}")
+
+        print(f"Number of Steps: {self.steps_count}")
+        print(f"Steps Time: {self.steps_time}")
+
+        print(f"Log File: {self.outfile}")
+
+        print("\n------------------------------------")
+        print("Environment Results")
+        print("------------------------------------")
+
+        print(f"Name: {self.env.name}")
+        #print(f"Type: {self.env.env_name}")
+
+        avg_reward = self.trial_rewards.mean()
+        print(f"Average Reward: {avg_reward}")
+
+
+
+        print("\n------------------------------------")
+        print("Agent Results")
+        print("------------------------------------")
+        print(f"Name: ")
+        print(f"Type: ")
+
+        parser = scribe.Parser(self.outfile, type)
+        cleaned = parser.import_log()
+        df = parser.get_df(cleaned)
+        parser.plot(df)
 
 def get_timestr():
     """get_timestr() returns a formatted date-time stamp for incremental log files."""
