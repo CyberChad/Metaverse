@@ -84,7 +84,11 @@ class Model(AbstractModel):
         log.info("Model:__init__()")
         self.ccm_env = MyEnvironment()
 
+        self.arch = "CCM"
+
         self.done = False
+
+        self._cycle = 0.05
         #(sgp :esc t:lf .05:trace-detail high)
 
     def load(self, prodFile="") -> str:
@@ -114,7 +118,10 @@ class Model(AbstractModel):
 
         #set default options
 
-        ccm.log_everything(self.agent)
+        test_log = ccm.log(html=True)
+        ccm.log_everything(self.agent, test_log)
+
+
 
         # This is how to dynamically load production rules
 
@@ -126,9 +133,10 @@ class Model(AbstractModel):
     def step(self) -> str:
 
         # self.agent.run(0.05)
-        self.ccm_env.run(0.05)
+        self.ccm_env.run(self._cycle)
         # next_action = self.agent.next_action
         # self.motor.next_action = next_action
+
         next_action = self.motor.update()
         log.debug(f"Model:step() Next Action is: {next_action}")
         # actr.run(1, True)
@@ -145,7 +153,8 @@ class Model(AbstractModel):
 
     def reset(self) -> str:
 
-        self.agent.reset()
+        self.__init__()
+        self.load(self.prodFile)
         return "The result of CmuActrModel:reset()"
 
     def shutdown(self) -> str:
@@ -175,13 +184,13 @@ class WorkingMemory(AbstractWorkingMemory):
         return f"The result of the ACTr WorkingMemory collaborating with the ({result})"
 
 
-class DeclarativeMemory(AbstractWorkingMemory):
+class DeclarativeMemory(AbstractDeclarativeMemory):
 
     def __init__(self, agent):
         self.agent = agent
 
 
-    def addWME(self, memory) -> str:
+    def addDM(self, memory) -> str:
 
         self.agent.memory.add(memory)
 
@@ -196,7 +205,6 @@ class DeclarativeMemory(AbstractWorkingMemory):
     def removeWME(self, collaborator: AbstractModel) -> str:
         result = collaborator.create()
         return f"The result of the ACTr WorkingMemory collaborating with the ({result})"
-
 
 
 class ProceduralMemory(AbstractProceduralMemory):
@@ -234,9 +242,6 @@ class Perception(AbstractPerception):
 
         chunks = ""
         # TODO: read these from a config file for different environments
-        #chunknames = ['cart_pos', 'cart_vel', 'pole_pos', 'pole_vel']
-        # these aren't strictly necessary for CCMSuite
-
         num_features = 0
 
         if self.obs_map is not None:
@@ -245,11 +250,9 @@ class Perception(AbstractPerception):
             num_features = self.observation_shape
 
         log.debug(f"num features: {num_features}")
-        #chunks.append(chunknames[0])
         chunks += f"{obs[0]}"
 
         for i in range(1, num_features):
-            #chunks.append(chunknames[i])
             chunks += f" {obs[i]}"
 
         log.debug(f"Perception:transduce(): {chunks}")

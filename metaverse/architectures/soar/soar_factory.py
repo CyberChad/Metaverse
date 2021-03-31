@@ -1,6 +1,9 @@
 import os
 import time
 
+import logging
+logger = logging.getLogger("metaverse")
+
 from metaverse.architectures.arch_factory import \
     AbstractFactory,\
     AbstractModel,\
@@ -245,6 +248,9 @@ class SoarModel(AbstractModel):
         self.procedural = SoarProceduralMemory(self)
         self.perception = SoarPerception(self)
         self.motor = SoarMotor(self)
+        self.arch = "Soar"
+
+        self._cycle = 0.05
 
         self.done = False
 
@@ -268,6 +274,7 @@ class SoarModel(AbstractModel):
         print(f"loading soar model from: {self.config_path}")
 
         global input_wmes
+        self.modelFile = modelFile
         self.adapter = adapter
 
         if adapter == "psych": #Uses new AgentConnector
@@ -275,7 +282,7 @@ class SoarModel(AbstractModel):
             _WATCH_LEVEL = 4
 
             self.agent = SoarAgent(config_filename=self.config_path, write_to_stdout=True, watch_level=_WATCH_LEVEL)
-            self.modelFile = modelFile
+
 
             # connector_switch = {
             #     "psych": SimpleConnector(self.agent),
@@ -287,7 +294,9 @@ class SoarModel(AbstractModel):
             self.agent.execute_command("stats -t") #start tracking per-cycle stats
 
             #max-dc-time sets a maximum amount of time a decision cycle is permitted.
-            self.agent.execute_command("max-dc-time 0.05")
+
+            max_dc_cmd = f"max-dc-time {self._cycle}"
+            self.agent.execute_command(max_dc_cmd)
 
         elif adapter == "cart-pole":
             self.kernel = self.create_kernel()
@@ -311,6 +320,7 @@ class SoarModel(AbstractModel):
             self.kernel = self.create_kernel()
             self.agent = self.create_agent(self.kernel, "agent")
             register_print_callback(self.kernel, self.agent, callback_print_message, None)
+            # TODO: merge with Gym adapter, or move to a config file
             map = ['beacon_x', 'beacon_y']
             self.perception.create_input_wmes(self.agent, map)
             print(self.agent.ExecuteCommandLine("source architectures/soar/tests/StarCraft2/starcraft2.soar"))
@@ -336,7 +346,11 @@ class SoarModel(AbstractModel):
             #print(f"status: {status}")
             #self.agent.execute_command("run -o")  # runs for 1 decision cycles
 
-            self.agent.execute_command("run -o")  # runs for 1 decision cycles
+            #run_cmd = f"run {self._cycle}"
+            run_cmd = f"run -o"
+
+            #self.agent.execute_command("run -o")  # runs for 1 decision cycles
+            self.agent.execute_command(run_cmd)  # runs for 1 decision cycles
 
             #running = self.agent.kernel.GetAgentStatus()
 
@@ -359,10 +373,13 @@ class SoarModel(AbstractModel):
         return "The result of SoarModel:run()"
 
     def reset(self) -> str:
-        print(self.agent.ExecuteCommandLine("stats"))
-        self.agent.ExecuteCommandLine("init-soar")
-        self.agent.ExecuteCommandLine("stats -t")
+        # print(self.agent.ExecuteCommandLine("stats"))
+        # self.agent.ExecuteCommandLine("init-soar")
+        # self.agent.ExecuteCommandLine("stats -t")
 
+        self.shutdown()
+        self.__init__()
+        self.load(self.modelFile, self.adapter)
 
         return "The result of SoarModel:reset()"
 
@@ -418,12 +435,45 @@ class SoarWorkingMemory(AbstractWorkingMemory):
         result = collaborator.load()
         return f"The result of the Soar WorkingMemory collaborating with the ({result})"
 
-class SoarDeclarativeMemory(AbstractWorkingMemory):
+class SoarDeclarativeMemory(AbstractDeclarativeMemory):
 
     def __init__(self, model=None):
         self.model = model
 
-    def addWME(self) -> str:
+    """
+    Soar uses two types of DM; Smem and EpMem.
+    The CMC does not distinguish between them, so we
+    assume all memories are Smem. We tokenize all chunk slots 
+    as attribute-value pairs to support sequential knowledge.
+    
+    User-added command syntax:
+    smem --add {
+        (<value> ^attrib <value>)
+        ...      
+    }
+    
+    The Soar kernel will store duplicate entries according to 
+    their proper place. Chunk types are not currently supported.     
+    """
+
+    def addDM(self, chunk) -> str:
+
+        slots = chunk.split(' ')
+
+        smem = "smem --add {"
+
+        if len(slots) > 0:
+            slot = slots[0]
+            smem = f"(<{slot}>"
+
+        if len(slots) > 1:
+            for ix in range(1,len(slots)):
+                slot = slots[ix]
+                smem += f" ^{slot} {slot}"
+
+        smem += ")}"
+        self.agent.execute_command(smem)
+
         return "The result of CmuACTrWorkingMemory:addWME()."
 
     """
@@ -432,7 +482,7 @@ class SoarDeclarativeMemory(AbstractWorkingMemory):
     argument.
     """
 
-    def removeWME(self, collaborator: AbstractModel) -> str:
+    def removeDM(self, collaborator: AbstractModel) -> str:
         result = collaborator.create()
         return f"The result of the ACTr WorkingMemory collaborating with the ({result})"
 
@@ -443,8 +493,29 @@ class SoarProceduralMemory(AbstractProceduralMemory):
     def __init__(self, model=None):
         self.model = model
 
-    def addPM(self) -> str:
-        return "The result of CmuACTrWorkingMemory:addWME()."
+    """
+    Production rules in Soar are of the form:
+    sp{name_of_rule
+        (state <s> ^attribute <value>)
+        ([<value>] ^attribute <value> [op])
+        -->
+        ([<value>] ^attribute <value> [op])
+    }
+    CP: only literal rules are implemented    
+    """
+    #TODO: add rule parser to tokenize attribute-value pairs
+
+    def addPM(self, name, lhs, rhs) -> str:
+        rule = "sp{name"
+        rule += lhs #of form (lhs_1)\n(lhs_2)...
+        rule += "-->"
+        rule += rhs #of form (lhs_1)\n(lhs_2)...
+        rule += "}"
+
+        logger.info(f"addPM: {rule}")
+
+
+        return "The result of SoarProceduralMemory:addPM()."
 
     """
     The variant, ACTr WorkingMemory, is only able to work correctly with the variant,

@@ -129,40 +129,41 @@ def transition_matrix(transitions, DEBUG=False):
 
 class Parser(object):
 
-    def __init__(self, filename, type):
+    def __init__(self, filename, type, test_iv):
         self.filename = filename
         self.type = type
+        self.test_iv = test_iv
 
     def timestamps(self, line):
         return re.findall(r"+[0-9].[0=9]",line)
 
 
     def import_log(self):
-        if self.type is "ACTR":
+        if self.type in "ACTR":
             return self.importACTR()
-        elif self.type is "Soar":
-            return self.importSoarCSV()
-        elif self.type is "CCM":
+        elif self.type in "Soar":
+            return self.importSoar()
+        elif self.type in "CCM":
             return self.importCCM()
         else: #Shouldn't be here!
             print(f"ERROR -- undefined parser type")
 
     def get_df(self, cleaned):
-        if self.type is "ACTR":
+        if self.type in "ACTR":
             return self.get_actr_df(cleaned)
-        elif self.type is "Soar":
+        elif self.type in "Soar":
             return self.get_soar_df(cleaned)
-        elif self.type is "CCM":
+        elif self.type in "CCM":
             return self.get_ccm_df(cleaned)
         else: #Shouldn't be here!
             print(f"ERROR -- undefined parser type")
 
     def plot(self, df):
-        if self.type is "ACTR":
+        if self.type in "ACTR":
             self.plot_actr(df)
-        elif self.type is "Soar":
+        elif self.type in "Soar":
             self.plot_soar(df)
-        elif self.type is "CCM":
+        elif self.type in "CCM":
             self.plot_ccm(df)
         else: #Shouldn't be here!
             print(f"ERROR -- undefined parser type")
@@ -231,6 +232,37 @@ class Parser(object):
         #return event1.parseString(results)
         return results
 
+
+    def get_actr_bold(self, cleaned):
+        """
+        From ACT-R Ref manual: only actions which occur as scheduled events will be considered.
+        That covers all the normal actions of the provided modules and their use through the
+        procedural module in a model, but any function calls made outside of the events
+        which directly affect a buffer (for example set-buffer-chunk) will not be counted as buffer activity.
+
+        Activity starts when one of three things occurs:
+        - a request (or modification request) is made to the buffer,
+        - a chunk is placed into the buffer, or
+        - a “state busy” query of the buffer is true.
+
+        Once activity has started, the buffer will be considered active
+        until one of three conditions occurs:
+        - the “state busy” query returns nil,
+        - the “state free” query returns true, or
+        - a new request (or modification request) is made to the buffer
+            (which ends the current activity and also starts a new one).
+
+        Some buffers (in particular the goal buffer) may have activities which are instantaneous
+        i.e. the start and stop times are the same. That activity is still recorded,
+        and how that is treated by the different activity reporting mechanisms will be discussed with each one.
+
+
+        :param cleaned:
+        :return:
+        """
+
+
+
     def get_actr_df(self, cleaned):
 
         print("--------------------------")
@@ -272,7 +304,8 @@ class Parser(object):
                 tokens = line.split()
                 if tokens and "[STEP]" in tokens[0]:
                     timer = tokens[1]
-                    print(f"{timer} {num_wm} {num_pm} {num_dm} {num_perc} {num_motor}")
+
+                    #print(f"{timer} {num_wm} {num_pm} {num_dm} {num_perc} {num_motor}")
 
                     data.append({
                         'timer' : str(timer),
@@ -354,28 +387,7 @@ class Parser(object):
         #ax = sns.countplot(x="timer", data=df)
         ax = sns.lineplot(x="timer", data=df)
 
-        # print(df)
-
-        # df2 = df.drop("timer", 1)
-        # plt.hist(x=df2)
-        # plt.legend(loc='best')
         plt.show()
-
-
-        #df["command"].hist(by=df["buffer"])
-        #df2 = pd.Series(df["buffer"],index=df["timer"])
-        #plt.show()
-
-
-        # buff_grp = df.groupby("buffer").count()
-        # #ax = sns.countplot(x="timer",hue="buffer", data=df)
-        # ax = sns.lineplot(x="timer", y="buffer", data=df)
-        # plt.show()
-        # df.plot(figsize=(15,4))
-        # df.plot(subplots=True, figsize=(15, 6))
-        # df.plot(y=["buffer", "command"], figsize=(15, 4))
-        # #df.plot(x="R", y=["F10.7", "Dst"], style='.')
-        # plt.show()
 
 
     # *****************************************
@@ -397,17 +409,25 @@ class Parser(object):
         nums_dot = nums | simple_punc
         numbers = Word(nums)
         time_stamp = Combine(OneOrMore(numbers)+Literal(".")+OneOrMore(numbers))
-        time_stamp.setResultsName("STEP")
+        time_stamp.setResultsName("[STEP]")
         wm_add = Literal("=>WM")
         wm_remove = Literal("<=WM")
         procedural = wm_remove | wm_add
         goal = Literal("GOAL")
         goal.setResultsName("GOAL")
-        declarative = Literal("DECLARATIVE")
+        setmem = Literal("^store")
+        getmem = Literal("^retrieve")
+        querymem = Literal("^query")
+        declarative = setmem | getmem | querymem
         declarative.setResultsName("DM")
-        #procedural = Literal("PROCEDURAL")
-        #procedural.setResultsName("PM")
-        module = goal | declarative | procedural
+
+        vision = Literal("VISION")
+        vision.setResultsName("VISION")
+
+        motor = Literal("^output")
+        motor.setResultsName("MOTOR")
+
+        module = goal | declarative | procedural | vision | motor
         module.setResultsName("module")
 
         #token = Combine(OneOrMore(alpha_nums) + ZeroOrMore(simple_punc) + ZeroOrMore(Literal('-')) + ZeroOrMore(alpha_nums))
@@ -427,50 +447,13 @@ class Parser(object):
 
         results = ""
 
-        num_pm = 0
-        total_pm = 0
-        num_wm = 0
-        total_wm = 0
-        num_dm = 0
-        total_dm = 0
-        num_perc = 0
-        total_perc = 0
-        num_motor = 0
-        total_motor = 0
-
         trace = []
+        data=[]
 
         for line in self.infile.readlines():
             log.debug(f"Scanning line: {line}")
-            if ("=>WM" in line) or ("<=WM" in line):
-                num_wm += 1
-                total_wm += 1
-            elif "Firing" in line:
-                num_pm += 1
-                total_pm += 1
-            elif ("^store" in line) or ("^retrieve" in line):
-                num_dm += 1
-                total_dm += 1
-            elif "input-link" in line:
-                num_perc += 1
-                total_perc += 1
-            elif "output-link" in line:
-                num_motor +=1
-                total_motor += 1
-            elif "<<STEP" in line:
-                tokens = tokenize(line)
-                print(f"{tokens[1]}: {num_wm} {num_pm} {num_dm} {num_perc} {num_motor}")
-                num_wm = 0
-                num_dm = 0
-                num_pm = 0
-                num_perc = 0
-                num_motor = 0
+            results += line
 
-        print(f"Working Mem Total: {total_wm}")
-        print(f"Production Mem Total: {total_pm}")
-        print(f"Declarative Mem Total: {total_dm}")
-        print(f"Perception Total: {total_perc}")
-        print(f"Motor Total: {total_motor}")
 
         #return event1.parseString(results)
         return results
@@ -515,26 +498,63 @@ class Parser(object):
 
         writer = csv.writer(fdout, lineterminator='\n')
 
+        num_pm = 0
+        total_pm = 0
+        num_wm = 0
+        total_wm = 0
+        num_dm = 0
+        total_dm = 0
+        num_perc = 0
+        total_perc = 0
+        num_motor = 0
+        total_motor = 0
+
         timer = 0.000
 
         for line in cleaned.split('\n'):
             if line is not None:
-                tokens = line.split(",")
-                if len(tokens) > 3:
-                    wm_changes = tokens[3]
-                    #writer.writerow([timer,wm_changes])
+                tokens = line.split()
+                if tokens and "[STEP]" in tokens[0]:
+                    timer = tokens[1]
+                    print(f"{timer} {num_wm} {num_pm} {num_dm} {num_perc} {num_motor}")
 
                     data.append({
-                        'timer' : str(format(timer, '.2f')),
-                        'changes' : str(wm_changes)
+                        'timer': str(timer),
+                        'WorkingMem': str(num_wm),
+                        'ProcMem': str(num_pm),
+                        'DecMem': str(num_dm),
+                        'Vision': str(num_perc),
+                        'Motor': str(num_motor)
                     })
-                    print(f"Timer: {format(timer, '.2f')}, Changes: {wm_changes}")
-                timer += 0.05
+                    num_wm = 0
+                    num_dm = 0
+                    num_pm = 0
+                    num_perc = 0
+                    num_motor = 0
 
-            #data[tokens[0]] = []
-            #print(data)
+                #if ("=>WM" in line) or ("<=WM" in line):
+                if ("=>WM" in line): #only consider writing to WM, as removal is equivalent to decay
+                    num_wm += 1
+                    total_wm += 1
+                if "Firing" in line:
+                    num_pm += 1
+                    total_pm += 1
+                if ("^store" in line) or ("^retrieve" in line) or ("^query" in line):
+                    num_dm += 1
+                    total_dm += 1
+                if "^input" in line: #input-link?
+                    num_perc += 1
+                    total_perc += 1
+                if "^output" in line: #output-link
+                    num_motor += 1
+                    total_motor += 1
 
-        #print(f"All buffers: {buffers}")
+            print(f"Working Mem Total: {total_wm}")
+            print(f"Production Mem Total: {total_pm}")
+            print(f"Declarative Mem Total: {total_dm}")
+            print(f"Perception Total: {total_perc}")
+            print(f"Motor Total: {total_motor}")
+
 
         print(f"JSONified:{data}")
 
@@ -547,7 +567,7 @@ class Parser(object):
 
         return df
 
-    def plot_soar(self, df):
+    def plot_soar(self, df, title="Default Title"):
 
         print("================================")
         print("           Stats")
@@ -562,6 +582,7 @@ class Parser(object):
         plt.title(title)
         #ax = sns.countplot(x="timer", data=df)
         ax = sns.lineplot(x="timer", data=df)
+        plt.show()
 
     # *****************************************
     #             CCM ACT-R Reports
@@ -583,6 +604,7 @@ class Parser(object):
         numbers = Word(nums)
         time_stamp = Combine(OneOrMore(numbers)+Literal(".")+OneOrMore(numbers))
         time_stamp.setResultsName("time")
+        counter = Literal("[STEP]")
         goal = Literal("goal.chunk")
         goal.setResultsName("GOAL")
         declarative = Literal("memory.busy")
@@ -607,6 +629,8 @@ class Parser(object):
         eventlist = Group(OneOrMore(event))
 
         event1 = Group(time_stamp + module + OneOrMore(alpha_nums))
+        event2 = Group(counter + time_stamp)
+        event3 = event1 | event2
 
         log.info(f"Parser.importCCM(): generating token tree")
 
@@ -614,7 +638,7 @@ class Parser(object):
 
         for line in self.infile.readlines():
             log.debug(f"Scanning line: {line}")
-            for match in event1.scanString(line):
+            for match in event3.scanString(line):
                 results += line
 
         #return event1.parseString(results)
@@ -635,31 +659,64 @@ class Parser(object):
 
         writer = csv.writer(fdout, lineterminator='\n')
 
+        num_pm = 0
+        total_pm = 0
+        num_wm = 0
+        total_wm = 0
+        num_dm = 0
+        total_dm = 0
+        num_perc = 0
+        total_perc = 0
+        num_motor = 0
+        total_motor = 0
+
+        timer = 0.000
+
         for line in cleaned.split('\n'):
             if line is not None:
                 tokens = line.split()
-                if len(tokens) > 2:
-                    timer = tokens[0]
-                    buffer = tokens[1]
-                    command = tokens[2]
+                if tokens and "[STEP]" in tokens[0]:
+                    timer = tokens[1]
 
-                    writer.writerow([timer,buffer,command])
+                    #print(f"{timer} {num_wm} {num_pm} {num_dm} {num_perc} {num_motor}")
 
                     data.append({
-                        'timer' : str(timer),
-                        'buffer' : str(buffer),
-                        'command' : str(command)
+                        'timer': str(timer),
+                        'WorkingMem': str(num_wm),
+                        'ProcMem': str(num_pm),
+                        'DecMem': str(num_dm),
+                        'Vision': str(num_perc),
+                        'Motor': str(num_motor)
                     })
+                    num_wm = 0
+                    num_dm = 0
+                    num_pm = 0
+                    num_perc = 0
+                    num_motor = 0
 
-                    buffers.append(tokens[1])
-            #print(f"Timer: {timer}, Buffer: {buffer}, Command: {command}, Target: {target}")
+                elif "goal" in line:
+                    num_wm += 1
+                    total_wm += 1
+                elif "production" in line:
+                    num_pm += 1
+                    total_pm += 1
+                elif "memory" in line:
+                    num_dm += 1
+                    total_dm += 1
+                elif "perception" in line:  # input-link?
+                    num_perc += 1
+                    total_perc += 1
+                elif "motor" in line:  # output-link
+                    num_motor += 1
+                    total_motor += 1
 
-            #data[tokens[0]] = []
-            #print(data)
+        print(f"Working Mem Total: {total_wm}")
+        print(f"Production Mem Total: {total_pm}")
+        print(f"Declarative Mem Total: {total_dm}")
+        print(f"Perception Total: {total_perc}")
+        print(f"Motor Total: {total_motor}")
 
-        #print(f"All buffers: {buffers}")
-
-        #print(f"JSONified:{data}")
+        print(f"JSONified:{data}")
 
         data_file = 'ccm_data.json'
 
@@ -670,13 +727,21 @@ class Parser(object):
 
         return df
 
-    def plot_ccm(self, df):
+    def plot_ccm(self, df, title="Default Title"):
 
         print("================================")
         print("           Stats")
         print("================================")
 
         print(df)
+
+        plt.figure()
+        df.plot(x="timer")
+        plt.legend(loc='best')
+        plt.title(title)
+        #ax = sns.countplot(x="timer", data=df)
+        ax = sns.lineplot(x="timer", data=df)
+        plt.show()
 
 def test_actr():
 
@@ -701,25 +766,27 @@ def test_actr():
 
 def test_soar():
 
-    #soar_logfile = "/home/chad/Dropbox/Metaverse/metaverse/experiments/results/soar_cartpole_20210308-174857.log"
-    #soar_logfile = "soar_counting_example.log"
-    soar_logfile = "soar_cartpole_example.log"
+
+    #soar_logfile = "soar_counting.log"
+    #soar_logfile = "soar_cartpole.log"
+    soar_logfile = "soar_beacons.log"
 
     parser = Parser(soar_logfile, "Soar")
     #cleaned = parser.importSoarCSV()
     cleaned = parser.importSoar()
     soar_df = parser.get_soar_df(cleaned)
-    parser.plot_soar(soar_df)
+    parser.plot_soar(soar_df, "Soar Beacons")
 
 def test_ccm():
 
-    ccm_logfile = "/home/chad/Dropbox/Metaverse/metaverse/experiments/results/ccm_cartpole_20210308-210739.log"
-    #ccm_logfile = "/home/chad/Dropbox/Metaverse/metaverse/experiments/results/ccm_count_test_20210308-202253.log"
+    #ccm_logfile = "ccm_count_test.log"
+    #ccm_logfile = "ccm_cartpole.log"
+    ccm_logfile = "ccm_beacons.log"
 
     parser = Parser(ccm_logfile, "CCM")
     cleaned = parser.importCCM()
     ccm_df = parser.get_ccm_df(cleaned)
-    parser.plot_soar(ccm_df)
+    parser.plot_ccm(ccm_df, "Python ACT-R Beacons")
 
 def test_df():
 
@@ -793,13 +860,250 @@ def test_df():
     plt.legend(loc='best')
     plt.show()
 
+class Reporter():
+    """
+    Reporter class contains the logic to generate and display measurements from \
+    different perspectives:
+        !Architectural!: CMC component use and interaction (from CLI)
+        !Behavioral!: from the perspective of another agent within the environment
+        Environment: descriptors from the virtual environment system, experiment
+        Computational: software and hardware resource utilization (from OS)
+
+    """
+
+    def __init__(self):
+        self.experiments = []
+
+    #***************************************
+    #       Architecture Reports
+    #***************************************
+
+    def add_experiment(self, arch="default", log_file=None):
+        exp = (arch, log_file)
+        self.experiments.append(exp)
+
+    def merge_frames(self, frames):
+
+        result = frames[0]
+        print(f"Result: {result}")
+
+        if len(frames) > 1:
+            for ix in range(1, len(frames)):
+                # print(f"Frames: {frames} Keys: {frame_keys}")
+                # result = pd.concat(frames, keys=frame_keys)
+                temp_df = frames[ix]
+                # print(f"Temp: {temp_df}")
+                result = result.merge(temp_df)
+                # print(f"Result: {result}")
+
+        return result
+
+
+    def gen_arch_frames(self, component=None, arch=None ):
+        """
+        Production System & Procedural Memory
+           - event triggers; load and utilization
+           - comparison; conflict resolution
+        """
+
+        frame_keys = []
+        working_mem_frames = []
+        procedural_mem_frames = []
+        declarative_mem_frames = []
+        vision_frames = []
+        motor_frames = []
+
+        df_pair = []
+
+        for experiment in self.experiments:
+            arch = experiment[0]
+            outfile = experiment[1]
+            print(f"Parser:arch__report() arch: {arch} outfile: {outfile}")
+
+            parser = Parser(outfile, arch, "ps")
+            cleaned = parser.import_log()
+            df = parser.get_df(cleaned)
+            df_pair = (arch, df)
+
+            wm_df = df[['timer', 'WorkingMem']]
+            wm_df.rename(columns={"WorkingMem": arch}, inplace=True)
+            working_mem_frames.append(wm_df)
+
+            pm_df = df[['timer', 'ProcMem']]
+            pm_df.rename(columns={"ProcMem": arch}, inplace=True)
+            procedural_mem_frames.append(pm_df)
+
+            dm_df = df[['timer', 'DecMem']]
+            dm_df.rename(columns={"DecMem": arch}, inplace=True)
+            declarative_mem_frames.append(dm_df)
+
+            vis_df = df[['timer', 'Vision']]
+            vis_df.rename(columns={"Vision": arch}, inplace=True)
+            vision_frames.append(vis_df)
+
+            mot_df = df[['timer', 'Motor']]
+            mot_df.rename(columns={"Motor": arch}, inplace=True)
+            motor_frames.append(mot_df)
+
+            # #print(df_ps)
+            # frames.append(df_ps)
+            # frame_keys.append(arch)
+        #print(df)
+
+        #concatinate architectures into keyed frame
+
+        self.working_mem_activations = self.merge_frames(working_mem_frames)
+        self.procedural_mem_activations = self.merge_frames(procedural_mem_frames)
+        self.declarative_mem_activations = self.merge_frames(declarative_mem_frames)
+        self.visual_activations = self.merge_frames(vision_frames)
+        self.motor_activations = self.merge_frames(motor_frames)
+
+
+    def plot_activations(self, df, title="Default"):
+
+        plt.figure()
+        df.plot(x="timer")
+        plt.legend(loc='best')
+        plt.title(title)
+        ax = sns.lineplot(x="timer", data=df)
+        plt.show()
+
+    def plot_activations_box(self, df, title="Default"):
+
+        df_box = df
+        df_box.drop(['timer'], axis='columns', inplace=True)
+
+        plt.figure()
+        plt.legend(loc='best')
+        plt.title(title)
+        ax = sns.boxplot(data=df_box)
+        plt.show()
+
+    def prod_activation_report(self, plot="None"):
+
+        print(f"-== Procedural Activation Report ==-")
+
+        print(f"Statistical Description: {self.procedural_mem_activations.describe()}")
+
+        print(f"Covariance: {self.procedural_mem_activations.cov()}")
+
+        if plot in "series":
+            self.plot_activations(self.procedural_mem_activations, "Procedural Activations")
+        elif plot in "box":
+            self.plot_activations_box(self.procedural_mem_activations, "Procedural Activations")
+
+
+
+    def working_mem_activation_report(self, plot=False):
+        """
+        Working Memory
+          - buffers/structures matching and updates
+
+        """
+        print(f"Working Memory Activation Stats: {self.working_mem_activations.describe()}")
+
+        if plot:
+            self.plot_activations(self.working_mem_activations, "Working Memory Activation")
+
+    def declarative_mem_activation_report(self, plot=False):
+        """
+        Declarative Memory
+            - chunk storage and activation
+            - noise and salience
+            - associative, inhibition, fade rate, partial activation, blending.
+        """
+        print(f"Declarative Memory Activation Stats: {self.declarative_mem_activations.describe()}")
+
+        if plot:
+            self.plot_activations(self.declarative_mem_activations, "Declarative Memory Activation")
+
+    def vision_activation_report(self, plot=False):
+        """
+        Visual Perception
+            - raw, pre-processed, object recognition and delay
+        """
+        print(f"Visual Activation Stats: {self.visual_activations.describe()}")
+
+        if plot:
+            self.plot_activations(self.visual_activations, "Visual Activation")
+
+    def motor_activation_report(self, plot=False):
+        """
+        Motor Action
+            - action type, rate, frequency
+        """
+        print(f"Motor Activation Stats: {self.motor_activations.describe()}")
+
+        if plot:
+            self.plot_activations(self.motor_activations, "Motor Activation")
+
+    #***************************************
+    #       Behavior Reports
+    #***************************************
+
+
+    def behavior_report(self):
+        """
+
+            - state space mapping and transitions (CBR)
+            - learning rate, task completion and reward/score
+            - human-likeness through DTMC matrix comparisons (Bohr2011ModelSystems), APM (SC2)
+        """
+        pass
+
+    #***************************************
+    #       Environment Reports
+    #***************************************
+
+    def environment_report(self):
+        """
+        Environment report
+            - general settings, trials, steps
+            - observational feature space and complexity
+            - action feature space and complexity
+            - peripheral or input types
+            - transduction requirements
+        """
+        pass
+
+
+    #***************************************
+    #       Computational Reports
+    #***************************************
+
+    def computational_report(self):
+        """
+        comp_report returns the following test metrics
+            - process trace
+            - call graph
+            - processor and memory utilization
+        """
+        pass
+
+
 if __name__ == '__main__':
 
-    test_df()
-
-    test_actr()
-
+    #test_df()
+    #test_actr()
     #test_soar()
+
+    import yaml
+    reporter = Reporter()
+
+    counting_file = '../last_counting_experiments.yaml'
+
+    stream = open(counting_file,'r')
+    config_data = yaml.safe_load(stream)
+
+    for exp in config_data:
+        arch = exp[0]
+        log_file = exp[1]
+        print(f"Arch: {arch} Logfile: {log_file}")
+        reporter.add_experiment(arch, log_file)
+
+    reporter.gen_arch_frames()
+    #reporter.prod_activation_report(plot="series")
+    reporter.working_mem_activation_report(plot="series")
 
     #test_ccm()
 

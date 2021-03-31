@@ -66,6 +66,7 @@ class AbstractModel(ABC):
 
     @abstractmethod
     def __init__(self) -> str:
+        self._cycle = 0.05
         pass
 
     @abstractmethod

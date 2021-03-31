@@ -10,13 +10,6 @@ smem --add {
     (<a> ^isa <count> ^num1 0 ^num2 1)
     (<b> ^isa <count> ^num1 1 ^num2 2)
     (<c> ^isa <count> ^num1 2 ^num2 3)
-    (<d> ^isa <count> ^num1 3 ^num2 4)
-    (<e> ^isa <count> ^num1 4 ^num2 5)
-    (<f> ^isa <count> ^num1 5 ^num2 6)
-    (<g> ^isa <count> ^num1 6 ^num2 7)
-    (<h> ^isa <count> ^num1 7 ^num2 8)
-    (<i> ^isa <count> ^num1 8 ^num2 9)
-    (<j> ^isa <count> ^num1 9 ^num2 10)
 }
 
 sp {topstate*propose*init-agent
@@ -63,8 +56,7 @@ sp {top-state*apply*update-number
 sp {topstate*propose*increase-number
    (state <s> ^name test-agent
               ^current-number <n>
-              ^current-increase <inc>
-              ^smem.command <scmd>)
+              ^current-increase <inc>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name increase-number
@@ -75,22 +67,18 @@ sp {topstate*apply*increase-number
    (state <s> ^name test-agent
               ^operator <o>
               ^io.output-link <out>
-              ^current-increase <inc>
-              ^smem.command <scmd>)
+              ^current-increase <inc>)
    (<o> ^name increase-number
         ^amount <inc>)
 -->
    (<out> ^increase-number <cmd>)
    (<cmd> ^number <inc>)
-   (<scmd> ^query <cue>)
-   (<cue> ^num1 <curr> ^num2 <num2>)
 }
 
 sp {topstate*apply*anything*clean-ol
    (state <s> ^name test-agent
               ^operator <o>
-              ^io.output-link <ol>
-              ^smem.result.success <cue>)
+              ^io.output-link <ol>)
    (<ol> ^<cmd-name> <cmd>)
    (<cmd> ^status complete)
 -->

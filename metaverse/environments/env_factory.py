@@ -206,7 +206,11 @@ class StarCraftEnvironment(AbstractEnvironment):
         self.random_seed = random_seed
         self.find_features = find_features
 
-        self.gym_env = gym.make(self.env_name)
+        env = gym.make(self.env_name)
+        env.settings['visualize'] = self.visualize
+        env.settings['step_mul'] = self.step_mul
+        env.settings['random_seed'] = self.random_seed
+        self.gym_env = env
         self.last_observation = self.gym_env.reset()
         if self.find_features:
             self.last_observation = self.get_features(self.last_observation)
@@ -223,10 +227,6 @@ class StarCraftEnvironment(AbstractEnvironment):
         self.total_reward = 0
 
         episodes_done = 0
-
-        self.gym_env.settings['visualize'] = self.visualize
-        self.gym_env.settings['step_mul'] = self.step_mul
-        self.gym_env.settings['random_seed'] = self.random_seed
 
     def isDone(self):
         return self.done

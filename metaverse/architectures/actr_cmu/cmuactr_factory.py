@@ -1,8 +1,13 @@
+from __future__ import annotations
 import os
 import time
 import logging
 log = logging.getLogger("metaverse")
 # logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(levelname)s - %(message)s')
+
+
+from abc import ABC, abstractmethod
+
 
 from metaverse.architectures.arch_factory import \
     AbstractFactory,\
@@ -12,6 +17,10 @@ from metaverse.architectures.arch_factory import \
     AbstractProceduralMemory, \
     AbstractPerception,\
     AbstractMotor
+
+from metaverse.emf import DeclarativeMemory, Model
+
+import metaverse.architectures
 
 import metaverse.architectures.actr_cmu.cmuactr
 import metaverse.architectures.actr_cmu.cmuactr as cmuactr
@@ -30,14 +39,17 @@ class CmuActrFactory(AbstractFactory):
     product, while inside the method a concrete product is instantiated.
     """
 
-    def createModel(self) -> AbstractModel:
-        return Model()
+    # def createModel(self) -> AbstractModel:
+    #     return Model()
+
+    def createModel(self) -> Model:
+        return CmuModel()
 
     def createWorkingMemory(self) -> AbstractWorkingMemory:
         return WorkingMemory()
 
     def createDeclarativeMemory(self) -> AbstractDeclarativeMemory:
-        return DeclarativeMemory()
+        return CmuDeclarativeMemory()
 
     def createProceduralMemory(self) -> AbstractProceduralMemory:
         return ProceduralMemory()
@@ -66,7 +78,87 @@ class ModelThread(threading.Thread):
     def step(self):
         cmuactr.run(1)
 
-class Model(AbstractModel):
+# class Model(AbstractModel):
+#
+#     # Create the ACT-R agent
+#
+#     # add_key_monitor() #TODO hook this up to the SC2 env.ACTIONS
+#     # add_mouse_monitor()  # TODO hook this up to the SC2 env.ACTIONS
+#
+#     def __init__(self):
+#
+#         cmuactr.reset()
+#         cmuactr.reload()
+#
+#         self.done = False
+#
+#         #self.model_thread = ModelThread()
+#         self.perception = Perception(self)
+#         self.working = WorkingMemory(self)
+#         self.declarative = CmuDeclarativeMemory(self)
+#         self.procedural = ProceduralMemory(self)
+#         self.motor = Motor(self)
+#
+#         # generate a default file
+#
+#         #self.window = cmuactr.open_exp_window("Find Beacon")
+#         #cmuactr.install_device(self.window)
+#
+#         #set default options
+#
+#         #(sgp :esc t:lf .05:trace-detail high)
+#
+#     def load(self, modelFile="") -> str:
+#         self.modelFile = modelFile
+#
+#         result = cmuactr.load_act_r_model(DIR_PATH + "/" + modelFile)
+#         cmuactr.reload(True)
+#
+#         return result
+#
+#
+#     def step(self) -> str:
+#         """Step function is basically the Production System clock. One step per cycle."""
+#
+#         #self.obs = obs
+#         #print(f"Model step sees: {obs}")
+#
+#         #pass observation to motor module
+#         #self.perception.addPerception(obs)
+#         #cmuactr.run(0.5, True) #TODO: determine correct running time
+#         # for i in range(0,10):
+#         #     cmuactr.current_connection.evaluate("run-step")
+#         # time.sleep(0.05)
+#         #self.model_thread.step()
+#
+#         cmuactr.run(0.05)
+#         self.events = cmuactr.call_command("mp-queue-count")
+#         print(f"Event queue count: {self.events}")
+#         log.debug(f"Event queue count: {self.events}")
+#
+#         if self.events == 0: #check to see if the model ran out of valid productions
+#             self.done = True
+#
+#         #return "The result of CmuActrModel:step()"
+#
+#         return 0 #Exit code, consider replacing with something else (events?)
+#
+#     def run(self, seconds=999,realTime=False) -> str:
+#         """Run launches the agent for asynchronous/realtime scenarios and environments"""
+#         #cmuactr.run(seconds,realTime)
+#         self.model_thread.start()
+#         return "The result of CmuActrModel:run()"
+#
+#     def reset(self) -> str:
+#         """reset puts the agent back in the original state specified in the model file"""
+#         cmuactr.reset()
+#         return "The result of CmuActrModel:reset()"
+#
+#     def shutdown(self) -> str:
+#         """unload and model.""" #TODO send kill SIG to act-r-command process ID
+#         return "The result of CmuActrModel:shutdown()"
+
+class CmuModel(Model):
 
     # Create the ACT-R agent
 
@@ -74,16 +166,31 @@ class Model(AbstractModel):
     # add_mouse_monitor()  # TODO hook this up to the SC2 env.ACTIONS
 
     def __init__(self):
+        #super.__init__(self)
 
         cmuactr.reset()
         cmuactr.reload()
 
+        self.arch = "ACTR"
+
         self.done = False
+
+        #initialize production system settings
+        self._cycle = 0.05
+
+        self.goal_status = []
+        self.prod_status = []
+        self.dm_status = []
+        self.visual_status = []
+        self.manual_status = []
+
+
+
 
         #self.model_thread = ModelThread()
         self.perception = Perception(self)
         self.working = WorkingMemory(self)
-        self.declarative = DeclarativeMemory(self)
+        self.declarative = CmuDeclarativeMemory(self)
         self.procedural = ProceduralMemory(self)
         self.motor = Motor(self)
 
@@ -104,7 +211,6 @@ class Model(AbstractModel):
 
         return result
 
-
     def step(self) -> str:
         """Step function is basically the Production System clock. One step per cycle."""
 
@@ -119,8 +225,20 @@ class Model(AbstractModel):
         # time.sleep(0.05)
         #self.model_thread.step()
 
-        cmuactr.run(0.05)
+        #cmuactr.run(self._cycle)
+        #print(f"_cycle: {self._cycle}")
+        cmuactr.run(self._cycle)
         self.events = cmuactr.call_command("mp-queue-count")
+        #cmuactr.call_command("buffer-status", "PRODUCTION")  # buffer_status(*params)
+        #cmuactr.call_command("buffer-status")  # buffer_status(*params)
+        #self.buffer_status = cmuactr.call_command("printed-buffer-status")
+        self.goal_status.append(cmuactr.call_command("printed-buffer-status", "goal"))
+        self.prod_status.append(cmuactr.call_command("printed-buffer-status", "production"))
+        self.dm_status.append(cmuactr.call_command("printed-buffer-status", "retrieval"))
+        self.visual_status.append(cmuactr.call_command("printed-buffer-status", "visual"))
+        self.manual_status.append(cmuactr.call_command("printed-buffer-status", "manual"))
+        #print(f"Buffer Status {self.goal_status}")
+
         print(f"Event queue count: {self.events}")
         log.debug(f"Event queue count: {self.events}")
 
@@ -139,7 +257,11 @@ class Model(AbstractModel):
 
     def reset(self) -> str:
         """reset puts the agent back in the original state specified in the model file"""
-        cmuactr.reset()
+        #cmuactr.reset()
+        #self.__init__()
+        self.load(self.modelFile)
+        cmuactr.reload()
+        self.done = False
         return "The result of CmuActrModel:reset()"
 
     def shutdown(self) -> str:
@@ -165,25 +287,32 @@ class WorkingMemory(AbstractWorkingMemory):
         return f"The result of the ACTr WorkingMemory collaborating with the ({result})"
 
 
-class DeclarativeMemory(AbstractWorkingMemory):
+# class DeclarativeMemory(AbstractWorkingMemory):
+#
+#     def __init__(self, model=None):
+#         self.model = model
+#
+#     def addWME(self) -> str:
+#         return "The result of CmuACTrWorkingMemory:addWME()."
+#
+#     """
+#     The variant, ACTr WorkingMemory, is only able to work correctly with the variant,
+#     ACTr Model. Nevertheless, it accepts any instance of AbstractModel as an
+#     argument.
+#     """
+#
+#     def removeWME(self, collaborator: AbstractModel) -> str:
+#         result = collaborator.create()
+#         return f"The result of the ACTr WorkingMemory collaborating with the ({result})"
+
+class CmuDeclarativeMemory(DeclarativeMemory):
 
     def __init__(self, model=None):
-        self.model = model
+            self.model = model
 
-    def addWME(self) -> str:
-        return "The result of CmuACTrWorkingMemory:addWME()."
+    def addDM(self) -> str:
 
-    """
-    The variant, ACTr WorkingMemory, is only able to work correctly with the variant,
-    ACTr Model. Nevertheless, it accepts any instance of AbstractModel as an
-    argument.
-    """
-
-    def removeWME(self, collaborator: AbstractModel) -> str:
-        result = collaborator.create()
-        return f"The result of the ACTr WorkingMemory collaborating with the ({result})"
-
-
+        return "The result of CmuDeclarativeMemory:addDM()."
 
 class ProceduralMemory(AbstractProceduralMemory):
 
@@ -434,7 +563,7 @@ class Motor(AbstractMotor):
 
         self.key_monitor_installed = False
 
-    def add_mouse_monitor():
+    def add_mouse_monitor(self):
         global mouse_monitor_installed
 
         if mouse_monitor_installed == False:
@@ -448,7 +577,7 @@ class Motor(AbstractMotor):
         else:
             return False
 
-    def remove_mouse_monitor():
+    def remove_mouse_monitor(self):
 
         cmuactr.remove_command_monitor("click-mouse", "sc2-mouse-click")
         cmuactr.remove_command("sc2-mouse-click")

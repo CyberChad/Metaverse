@@ -58,6 +58,15 @@ class AbstractExperiment(ABC):
         """General metrics from model and environment"""
         pass
 
+    @abstractmethod
+    def set_parameters(self, iv=None, start_val=None, end_val=None, inc=None):
+        """Trial parameters:
+        """
+        pass
+
+
+
+
 import metaverse.utils.scribe as scribe
 
 import metaverse.architectures as architectures
@@ -90,6 +99,11 @@ class Experiment(AbstractExperiment):
         self.start_time = 0
         self.stop_time = 0
 
+        self.do_iv_test = False
+        self._iv = None #independent variable
+        self._iv_low = None #iv starting value
+        self._iv_high = None #iv ending value
+        self._iv_inc = None #iv increment amount per trial
 
         # TODO: Need Try/Catch since architecture and environment are mandatory;
         #  should fail if either are None
@@ -98,21 +112,40 @@ class Experiment(AbstractExperiment):
         logging.info(f"Agent: {model}")
         logging.info(f"Environment: {env}")
 
-        observation_space = self.env.getObservationSpace()
-        print(f"Observation space: {observation_space}")
+        self.map = map
 
-        action_space = self.env.getActionSpace()
-        print(f"Action space: {action_space}")
+        self.observation_space = self.env.getObservationSpace()
+        print(f"Observation space: {self.observation_space}")
+
+        self.action_space = self.env.getActionSpace()
+        print(f"Action space: {self.action_space}")
 
         # TODO: try if env is GymEnv
 
-        if observation_space is not None:
-            self.model.perception.setObservationSpace(observation_space)
-        if action_space is not None:
-            self.model.motor.setActionSpace(action_space)
-        if map is not None:
-            self.model.perception.obs_map = map
+        if self.observation_space is not None:
+            self.model.perception.setObservationSpace(self.observation_space)
+        if self.action_space is not None:
+            self.model.motor.setActionSpace(self.action_space)
+        if self.map is not None:
+            self.model.perception.obs_map = self.map
 
+    def set_parameters(self, iv=None, iv_low=None, iv_high=None, iv_inc=None):
+        """Trial parameters:
+        """
+        self._iv = iv
+        self._iv_low = iv_low
+        self._curr_iv_inc = iv_low
+        self._iv_high = iv_high
+        self._iv_inc = iv_inc
+
+        print("Experiment():set_parameters()")
+        print(f"Independent Variable: {self._iv}")
+        print(f"Low value: {self._iv_low}")
+        print(f"High value: {self._iv_high}")
+        print(f"Increment: {self._iv_inc}")
+
+        if self._iv and self._iv_low and self._iv_high and self._iv_inc:
+            self.do_iv_test = True
 
     def load(self, filename=""):
         """Load the parameters from a json file"""
@@ -187,6 +220,8 @@ class Experiment(AbstractExperiment):
         self.trial_rewards = np.zeros((maxtrials, ), dtype=np.int32)
 
 
+
+
         #self.agent.run()
 
         while trial < maxtrials:
@@ -221,13 +256,29 @@ class Experiment(AbstractExperiment):
                 trial = trial + 1
                 print(f"Trial {trial}, Number of steps {step}")
                 step = 0
+                #if testing an IV then update model
+                if self.do_iv_test and (self._curr_iv_inc <= self._iv_high):
+                    print(f"Experiment:run()._curr_iv_inc: {self._curr_iv_inc}")
+                    self._curr_iv_inc += self._iv_inc
+                    if "ps" in self._iv:
+                        self.model._clock = self._curr_iv_inc
+                self.model.reset()
                 self.env.reset()
                 self.obs = self.env.getLastObservation()
+
+                if self.observation_space is not None:
+                    self.model.perception.setObservationSpace(self.observation_space)
+                if self.action_space is not None:
+                    self.model.motor.setActionSpace(self.action_space)
+                if self.map is not None:
+                    self.model.perception.obs_map = self.map
+
+
                 #self.agent.reset()
                 self.model.perception.update_model_action(self.obs)
                 self.model.step()
 
-    def report(self, type=None):
+    def report(self, arch=None, test_iv="all"):
         """define some kind of pretty print report on all the stats.
 
             Inputs: choice of reports to generate
@@ -237,6 +288,10 @@ class Experiment(AbstractExperiment):
                 - Model: TBD
                 - Stats: TBD
         """
+
+        #try to get arch from the model
+        if arch is None:
+            arch = self.model.arch
 
         #Report on experiment
 
@@ -282,10 +337,7 @@ class Experiment(AbstractExperiment):
         print(f"Name: ")
         print(f"Type: ")
 
-        parser = scribe.Parser(self.outfile, type)
-        cleaned = parser.import_log()
-        df = parser.get_df(cleaned)
-        parser.plot(df)
+        return self.outfile
 
 def get_timestr():
     """get_timestr() returns a formatted date-time stamp for incremental log files."""

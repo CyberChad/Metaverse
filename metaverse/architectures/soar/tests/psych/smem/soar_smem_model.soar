@@ -1,0 +1,62 @@
+# Rules to accompany the Semantic Memory tutorial
+# that illustrates simple examples of all
+# agent interactions with semantic memory.
+
+smem --set learning on
+
+smem --add {
+    (<a> ^isa <count> ^num1 0 ^num2 1)
+    (<b> ^isa <count> ^num1 1 ^num2 2)
+    (<c> ^isa <count> ^num1 2 ^num2 3)
+}
+
+
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init
+              ^smem.command <cmd>)
+-->
+   (<s> ^name counting)
+   (<s> ^current 0)
+}
+
+sp {propose*cb-retrieval
+   (state <s> ^name counting
+              ^current <curr>
+              ^smem.command <cmd>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name cb-retrieval)
+}
+
+sp {apply*cb-retrieval
+   (state <s> ^operator <op>
+              ^current <curr>
+              ^smem.command <cmd>)
+   (<op> ^name cb-retrieval)
+-->
+    (<s> ^name increase)
+   (<cmd> ^query <cue>)
+   (<cue> ^num1 <curr> ^num2 <num2>)
+}
+
+sp {fuckyeah*increase-number
+   (state <s> ^name increase
+              ^current <curr>
+              ^smem.command <cmd>
+              ^smem.result.success <cue>
+              ^smem.result.retrieved <lti>)
+              (<lti> ^num2 <num2>)
+-->
+   (<s> ^operator <op> + =)
+   (<s> ^name counting)
+   (<s> ^current <num2>)
+}
+

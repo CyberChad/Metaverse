@@ -1,0 +1,64 @@
+#Metaverse experiment configs using the following format
+#
+#- unique_experiment_name:
+#
+#  config:
+#    name: A more descriptive experiment tile
+#    trials: {int: number of runs}
+#    steps: {int: maximum steps per run}
+#
+#  model:
+#    architecture: {lisp_actr/python_actr/soar}
+#    settings: '/relative/path/to/model_file.{actr/py/soar}'
+#
+#  environment:
+#    name: a valid environment in gym.envs()
+#    type: {psych/gym}
+
+
+#CMU Count Test
+- lisp_actr_counting:
+
+  config:
+    name: CMU Lisp ACT-R Counting Experiment
+    trials: 1
+    steps: 50
+
+  model:
+      architecture: lisp_actr
+      file: '/tests/psych/count_test.lisp'
+
+  environment:
+      name: Counting to 10
+      type: simple
+      adapter: none
+
+#CMU Cartpole Test
+- lisp_actr_cartpole:
+
+  config:
+    name: CMU Lisp ACT-R Cart Pole Experiment
+    trials: 10
+    steps: 195
+
+  model:
+    architecture: lisp_actr
+    file: '/tests/gym/cartpole.lisp'
+
+  productions:
+    rate: 0.05
+
+
+
+  environment:
+    name: Cartpole-v0
+    type: gym
+    obs_map:
+      - cart_pos
+      - cart_vel
+      - pole_pos
+      - pole_vel
+    default_act: 0
+    adapter: none
+
+#End of Experiments

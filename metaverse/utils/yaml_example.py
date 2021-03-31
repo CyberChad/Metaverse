@@ -22,8 +22,9 @@ if __name__ == '__main__':
 
     for doc in dictionary:
         print("New document:")
-        for key, value in doc.items():
-            print(key + " : " + str(value))
-            if type(value) is list:
-                print(str(len(value)))
+        for list in doc():
+            for key, value in list:
+                print(key + " : " + str(value))
+                if type(value) is list:
+                    print(str(len(value)))
 
