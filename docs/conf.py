@@ -48,9 +48,9 @@ extensions = [
 # built documents.
 #
 # The short X.Y version.
-version = metaverse.__version__
+#version = metaverse.__version__
 # The full version, including alpha/beta/rc tags.
-release = version
+#release = version
 
 # Napoleon settings
 napoleon_google_docstring = True
