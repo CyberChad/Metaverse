@@ -16,11 +16,12 @@
 import sphinx_rtd_theme
 
 
-# -- Project information -----------------------------------------------------
-
+# General information about the project.
 project = 'Metaverse'
-copyright = '2021, Chad Peters'
-author = 'Chad Peters'
+now = datetime.utcfromtimestamp(
+    int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
+)
+copyright = '2020 - {}, Chad Peters'.format(now.year)
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,9 +33,19 @@ author = 'Chad Peters'
 extensions = [
     'recommonmark',
     'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx_rtd_theme'
 ]
+
+# The version info for the project you're documenting, acts as replacement for
+# |version| and |release|, also used in various other places throughout the
+# built documents.
+#
+# The short X.Y version.
+version = metaverse.__version__
+# The full version, including alpha/beta/rc tags.
+release = version
 
 # Napoleon settings
 napoleon_google_docstring = True
@@ -59,6 +70,15 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+# The suffix of source filenames.
+source_suffix = '.rst'
+
+# The master toctree document.
+master_doc = 'index'
+
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -91,3 +111,27 @@ html_theme_options = {
     'includehidden': True,
     'titles_only': False
 }
+
+# -- Options for LaTeX output --------------------------------------------------
+
+# The paper size ('letter' or 'a4').
+#latex_paper_size = 'letter'
+
+# The font size ('10pt', '11pt' or '12pt').
+#latex_font_size = '10pt'
+
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title, author, documentclass [howto/manual]).
+latex_documents = [
+  ('index', 'metaverse.tex', 'metaverse Documentation',
+   'Chad Peters', 'manual'),
+]
+
+# -- Options for manual page output --------------------------------------------
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [
+    ('index', 'metaverse', 'metaverse Documentation',
+     ['Chad Peters'], 1)
+]
