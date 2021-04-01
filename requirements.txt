@@ -23,5 +23,4 @@ six~=1.15.0
 scipy~=1.6.0
 pysc2~=3.0.0
 setuptools~=51.3.3
-sc2gym~=0.0.5
 pyactr~=0.2.4
