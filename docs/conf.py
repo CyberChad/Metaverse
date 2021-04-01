@@ -33,7 +33,7 @@ extensions = [
     'recommonmark',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    sphinx_rtd_theme
+    'sphinx_rtd_theme'
 ]
 
 # Napoleon settings
