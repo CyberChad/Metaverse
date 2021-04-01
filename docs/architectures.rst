@@ -4,11 +4,11 @@ Architectures Module
 .. automodule:: metaverse.architectures
     :members:
 
-.. autoclass:: metaverse.architectures.actr_ccmsuite
+.. automodule:: metaverse.architectures.actr_ccmsuite
     :members:
 
-.. autoclass:: metaverse.architectures.actr_cmu
+.. automodule:: metaverse.architectures.actr_cmu
     :members:
     
-.. autoclass:: metaverse.architectures.soar
+.. automodule:: metaverse.architectures.soar
     :members:
