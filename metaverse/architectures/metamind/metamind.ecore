@@ -8,7 +8,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="environment" lowerBound="1"
         eType="#//Environment" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Module" abstract="true">
+  <eClassifiers xsi:type="ecore:EClass" name="Module" abstract="true" eSuperTypes="#//ABC">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="buffer" eType="#//Buffer"
         containment="true"/>
@@ -19,6 +19,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DeclarativeMemory" eSuperTypes="#//Module">
+    <eOperations name="addDM"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dmchunks" upperBound="-1"
         eType="#//Chunk" containment="true"/>
   </eClassifiers>
@@ -58,4 +59,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="Slot">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ABC" abstract="true">
+    <eOperations name="get_name"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eSubpackages name="testPackage"/>
 </ecore:EPackage>

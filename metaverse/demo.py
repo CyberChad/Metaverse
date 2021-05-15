@@ -911,7 +911,7 @@ if __name__ == '__main__':
 
     #compare_cartpole()
 
-    compare_beacons()
+    #compare_beacons()
 
     #----------------------------------------
     #           CMU ACT-R Tests
@@ -924,7 +924,7 @@ if __name__ == '__main__':
     # test_cmu_cartpole()
     #
     # print("*** START CMU StarCraft ***")
-    # test_cmu_starcraft()
+    test_cmu_starcraft()
 
     # # # ----------------------------------------
     # # #           Soar Tests

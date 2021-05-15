@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.ui.newWizards">
+      <!-- @generated metamind -->
+      <category
+            id="org.eclipse.emf.ecore.Wizard.category.ID"
+            name="%_UI_Wizard_category"/>
+      <wizard
+            id="metamind.ecore.metamind.presentation.MetamindModelWizardID"
+            name="%_UI_MetamindModelWizard_label"
+            class="metamind.ecore.metamind.presentation.MetamindModelWizard"
+            category="org.eclipse.emf.ecore.Wizard.category.ID"
+            icon="icons/full/obj16/MetamindModelFile.gif">
+         <description>%_UI_MetamindModelWizard_description</description>
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+   </extension>
+
+   <extension point="org.eclipse.ui.editors">
+      <!-- @generated metamind -->
+      <editor
+            id="metamind.ecore.metamind.presentation.MetamindEditorID"
+            name="%_UI_MetamindEditor_label"
+            icon="icons/full/obj16/MetamindModelFile.gif"
+            extensions="metamind"
+            class="metamind.ecore.metamind.presentation.MetamindEditor"
+            contributorClass="metamind.ecore.metamind.presentation.MetamindActionBarContributor">
+      </editor>
+   </extension>
+
+</plugin>
