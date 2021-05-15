@@ -67,7 +67,7 @@ def update():
     ptr += 1
 timer = QtCore.QTimer()
 timer.timeout.connect(update)
-timer.start(50)
+timer.start(500)
 
 
 win.nextRow()

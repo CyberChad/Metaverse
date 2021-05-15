@@ -81,101 +81,101 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QApplication)
 
 
-class MainWindow(QMainWindow):
-
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-
-        hbox = QHBoxLayout(self)
-        topleft = QFrame(self)
-        topleft.setFrameShape(QFrame.StyledPanel)
-
-        topright = QFrame(self)
-        topright.setFrameShape(QFrame.StyledPanel)
-
-        bottom = QFrame(self)
-        bottom.setFrameShape(QFrame.StyledPanel)
-
-        # Main window object and top frame
-        self.setObjectName("MainWindow")
-        self.setWindowTitle('Metaverse Launcher')
-        self.setWindowIcon(QIcon('QtGUI/cyberbrain.jfif'))
-
-        textEdit = QTextEdit()
-        self.setCentralWidget(textEdit)
-
-        okButton = QPushButton("OK")
-        cancelButton = QPushButton("Cancel")
-
-        hbox = QHBoxLayout()
-        hbox.addStretch(1)
-        #hbox.addWidget(okButton)
-        #hbox.addWidget(cancelButton)
-
-        vbox = QVBoxLayout()
-        vbox.addStretch(1)
-        vbox.addLayout(hbox)
-        self.setLayout(vbox)
-
-        # init bottom status bar
-        self.statusbar = self.statusBar()
-        self.statusbar.showMessage('Ready')
-
-        # init Main Menu
-
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-
-        newAct = QAction('New', self)
-        fileMenu.addAction(newAct)
-
-        impMenu = QMenu('Import', self)
-        impAct = QAction('Import configuration', self)
-        impMenu.addAction(impAct)
-        fileMenu.addMenu(impMenu)
-
-        exitAct = QAction(QIcon('exit.png'), '&Exit', self)
-        exitAct.setShortcut('Ctrl+Q')
-        exitAct.setStatusTip('Exit application')
-        exitAct.triggered.connect(qApp.quit)
-        fileMenu.addAction(exitAct)
-
-        # View menu
-        viewMenu = menubar.addMenu('View')
-        viewStatAct = QAction('View statusbar', self, checkable=True)
-        viewStatAct.setStatusTip('View statusbar')
-        viewStatAct.setChecked(True)
-        viewStatAct.triggered.connect(self.toggleMenu)
-
-        viewMenu.addAction(viewStatAct)
-
-        self.toolbar = self.addToolBar('Exit')
-        self.toolbar.addAction(exitAct)
-
-        # init size, position
-        self.resize(800, 600)
-        self.show()
-
-    def contextMenuEvent(self, event):
-        cmenu = QMenu(self)
-
-        newAct = cmenu.addAction("New")
-        opnAct = cmenu.addAction("Open")
-        quitAct = cmenu.addAction("Quit")
-        action = cmenu.exec_(self.mapToGlobal(event.pos()))
-
-        if action == quitAct:
-            qApp.quit()
-
-    def toggleMenu(self, state):
-
-        if state:
-            self.statusbar.show()
-        else:
-            self.statusbar.hide()
+# class MainWindow(QMainWindow):
+#
+#     def __init__(self):
+#         super().__init__()
+#         self.initUI()
+#
+#     def initUI(self):
+#
+#         hbox = QHBoxLayout(self)
+#         topleft = QFrame(self)
+#         topleft.setFrameShape(QFrame.StyledPanel)
+#
+#         topright = QFrame(self)
+#         topright.setFrameShape(QFrame.StyledPanel)
+#
+#         bottom = QFrame(self)
+#         bottom.setFrameShape(QFrame.StyledPanel)
+#
+#         # Main window object and top frame
+#         self.setObjectName("MainWindow")
+#         self.setWindowTitle('Metaverse Launcher')
+#         self.setWindowIcon(QIcon('QtGUI/cyberbrain.jfif'))
+#
+#         textEdit = QTextEdit()
+#         self.setCentralWidget(textEdit)
+#
+#         okButton = QPushButton("OK")
+#         cancelButton = QPushButton("Cancel")
+#
+#         hbox = QHBoxLayout()
+#         hbox.addStretch(1)
+#         #hbox.addWidget(okButton)
+#         #hbox.addWidget(cancelButton)
+#
+#         vbox = QVBoxLayout()
+#         vbox.addStretch(1)
+#         vbox.addLayout(hbox)
+#         self.setLayout(vbox)
+#
+#         # init bottom status bar
+#         self.statusbar = self.statusBar()
+#         self.statusbar.showMessage('Ready')
+#
+#         # init Main Menu
+#
+#         menubar = self.menuBar()
+#         fileMenu = menubar.addMenu('&File')
+#
+#         newAct = QAction('New', self)
+#         fileMenu.addAction(newAct)
+#
+#         impMenu = QMenu('Import', self)
+#         impAct = QAction('Import configuration', self)
+#         impMenu.addAction(impAct)
+#         fileMenu.addMenu(impMenu)
+#
+#         exitAct = QAction(QIcon('exit.png'), '&Exit', self)
+#         exitAct.setShortcut('Ctrl+Q')
+#         exitAct.setStatusTip('Exit application')
+#         exitAct.triggered.connect(qApp.quit)
+#         fileMenu.addAction(exitAct)
+#
+#         # View menu
+#         viewMenu = menubar.addMenu('View')
+#         viewStatAct = QAction('View statusbar', self, checkable=True)
+#         viewStatAct.setStatusTip('View statusbar')
+#         viewStatAct.setChecked(True)
+#         viewStatAct.triggered.connect(self.toggleMenu)
+#
+#         viewMenu.addAction(viewStatAct)
+#
+#         self.toolbar = self.addToolBar('Exit')
+#         self.toolbar.addAction(exitAct)
+#
+#         # init size, position
+#         self.resize(800, 600)
+#         self.show()
+#
+#     def contextMenuEvent(self, event):
+#         cmenu = QMenu(self)
+#
+#         newAct = cmenu.addAction("New")
+#         opnAct = cmenu.addAction("Open")
+#         quitAct = cmenu.addAction("Quit")
+#         action = cmenu.exec_(self.mapToGlobal(event.pos()))
+#
+#         if action == quitAct:
+#             qApp.quit()
+#
+#     def toggleMenu(self, state):
+#
+#         if state:
+#             self.statusbar.show()
+#         else:
+#             self.statusbar.hide()
 
 
 ##### Almost like a seperate app ***********
@@ -189,22 +189,57 @@ import numpy as np
 from pyqtgraph.dockarea import *
 
 app = QtGui.QApplication([])
-win = QtGui.QMainWindow()
+win = QtGui.QMainWindow(animated=True)
+
+#create top menu bar
+menubar = win.menuBar()
+
+# create bottom status bar
+statusbar = win.statusBar()
+statusbar.showMessage('Ready')
+
+#File Menu Options
+fileMenu = menubar.addMenu('&File')
+newAct = QAction('New')
+fileMenu.addAction(newAct)
+
+impMenu = QMenu('Import')
+impAct = QAction('Import configuration')
+impMenu.addAction(impAct)
+fileMenu.addMenu(impMenu)
+
+exitAct = QAction(QIcon('exit.png'), '&Exit')
+exitAct.setShortcut('Ctrl+Q')
+exitAct.setStatusTip('Exit application')
+exitAct.triggered.connect(qApp.quit)
+fileMenu.addAction(exitAct)
+
+# View Menu Options
+viewMenu = menubar.addMenu('View')
+viewStatAct = QAction('View statusbar', checkable=True)
+viewStatAct.setStatusTip('View statusbar')
+viewStatAct.setChecked(True)
+#viewStatAct.triggered.connect(self.toggleMenu)
+
+#Central Docking Area
 area = DockArea()
 win.setCentralWidget(area)
-win.resize(1000,500)
+win.resize(1920,1080)
 
 win.setWindowTitle('Metaverse')
 
 #dTop = Dock("dTop", size=(1000, 250))
-dBottom = Dock("dBottom", size=(1000, 250))
+#dBottom = Dock("dBottom", size=(1000, 250))
 dLeft = Dock("dLeft", size=(500, 250))
+dCentre = Dock("dCentre", size=(500, 250))
 dRight = Dock("dRight", size=(500, 250))
 
-
 area.addDock(dLeft, 'left')      ## place d1 at left edge of dock area (it will fill the whole space since there are no other docks yet)
+area.addDock(dCentre, 'right')
 area.addDock(dRight, 'right')     ## place d2 at right edge of dock area
-area.addDock(dBottom, 'bottom')     ## place d2 at right edge of dock area
+#area.addDock(dBottom, 'bottom')     ## place d2 at right edge of dock area
+
+
 
 ## Add widgets into each dock
 
@@ -386,7 +421,7 @@ dRight.addWidget(wMotor)
 dRight.addWidget(wPerc)
 
 launchButton = QPushButton("Launch")
-launchButton.clicked.connect(on_click())
+#launchButton.clicked.connect(on_click())
 
 #cancelButton = QPushButton("Cancel")
 
@@ -402,7 +437,7 @@ launchButton.clicked.connect(on_click())
 #vbox.addStretch(1)
 #vbox.addLayout(hbox)
 
-dBottom.addWidget(launchButton)
+dLeft.addWidget(launchButton)
 
 def on_click():
     print('Launch Button Clicked')
